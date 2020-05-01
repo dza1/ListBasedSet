@@ -7,11 +7,12 @@
 
 
 CC=g++
-CFLAGS= -Wall -g  -c
-LDFLAGS=
-SOURCES=test.cpp node.cpp 
+CFLAGS= -Wall -g -c -fopenmp
+LDFLAGS= -g -fopenmp
+SOURCES=node.cpp Coarse_Grained.cpp main.cpp
+HEADER= Coarse-Grained.h
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=test
+EXECUTABLE=main
 
 all: $(EXECUTABLE)
 .PHONY: clean
@@ -19,7 +20,7 @@ all: $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS) #linker
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-%.o:%.cpp
+%.o:%.cpp %.h
 	$(CC) $(CFLAGS) $< -o $@
 
 

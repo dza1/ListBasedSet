@@ -2,6 +2,7 @@
 #include <iostream>
 using namespace std;
 #include "node.h"
+#include  <omp.h>
 
 
 int main() {
@@ -9,7 +10,9 @@ int main() {
 	oldtNode->key = 10;
 	node *newNode = new node();
 	newNode->next = oldtNode;
-	std::cout << "Key: " << newNode->next->key;
-
+	#pragma omp parallel
+	{
+		printf("Key: %i\n",newNode->next->key);
+	}
 	return 0;
 }

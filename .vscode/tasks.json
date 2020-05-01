@@ -3,7 +3,7 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "g++ build active file",
+            "label": "g++-7 build active file",
             "command": "make all",
             "problemMatcher": [
                 "$gcc"
@@ -13,11 +13,11 @@
                 "isDefault": true
             }
         },
-		{
-			"type": "shell",
-			"label": "clean",
-			"command": "make clean",
-			"problemMatcher": []
-		}
+        {
+            "type": "shell",
+            "label": "clean",
+            "command": "make clean",
+            "problemMatcher": []
+        }
     ]
 }

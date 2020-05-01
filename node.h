@@ -1,10 +1,11 @@
 #ifndef NODE_H__
 #define NODE_H__
-
+#include <stdint.h>
 class node {
   public:
-	int key;
+	uint32_t key;
 	node *next;
-	node();
+	int item;
+	node(int item);
 };
 #endif

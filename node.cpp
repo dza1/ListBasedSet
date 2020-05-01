@@ -2,8 +2,8 @@
 #include <iostream>
 using namespace std;
 
-node::node() {
-	this->key = 0;
+node::node(int item) {
+	this->key = item;
 	this->next = NULL;
-	
+	this->item = item;
 }
