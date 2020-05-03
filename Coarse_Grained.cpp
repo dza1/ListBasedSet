@@ -8,14 +8,15 @@ using namespace std;
 
 template <class T>
 CoarseList<T>::CoarseList() {
-	head = new node(0);
-	head->next = new node(UINT32_MAX);
+	head = new node<T>(0,0);
+	head->next = new node<T>(0,UINT32_MAX);
 }
 
 template <class T>
 bool CoarseList<T>::add(T item) {
 	try {
-		node *pred, *curr;
+		node<T> *pred;
+		node<T> *curr;
 		// lock_guard<std::mutex> g(mtx);
 		mtx.lock();
 		pred = head;
@@ -34,7 +35,7 @@ bool CoarseList<T>::add(T item) {
 		}
 
 		// Add item to the set
-		node *n = new node(item);
+		node<T> *n = new node<T>(item);
 		n->next = curr;
 		pred->next = n;
 		mtx.unlock();

@@ -13,7 +13,7 @@ class CoarseList { // The class
 	std::mutex mtx;
 
   public:
-	node *head;
+	node<T> *head;
 	CoarseList();
 	bool add (T item);
 };
