@@ -6,24 +6,32 @@
 
 
 
-CC=g++
-CFLAGS= -Wall -g -c -fopenmp
-LDFLAGS= -g -fopenmp
-SOURCES=node.cpp Coarse_Grained.cpp main.cpp
-HEADER= Coarse-Grained.h
-OBJECTS=$(SOURCES:.cpp=.o)
+CXX=g++
+CFLAGS= -Wall  -fopenmp -c -MMD
+LDFLAGS=  -fopenmp
+SOURCES=main.cpp node.cpp Fine_Grained.cpp Coarse_Grained.cpp
+BUILD_DIR = ./.build
+OBJECTS=$(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
+DEP = $(OBJECTS:%.o=%.d)
 EXECUTABLE=main
 
 all: $(EXECUTABLE)
+
 .PHONY: clean
 
 $(EXECUTABLE): $(OBJECTS) #linker
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
 
-%.o:%.cpp %.h
-	$(CC) $(CFLAGS) $< -o $@
+# Include all .d files
+-include $(DEP)
+
+# The -MMD flags additionaly creates a .d file with
+# the same name as the .o file.
+$(BUILD_DIR)/%.o : %.cpp
+	mkdir -p $(@D)
+	$(CXX) $(CFLAGS) $< -o $@
 
 
 clean:
-	rm -rf *.o $(EXECUTABLE) 
+	rm -rf $(OBJECTS) $(DEP) $(EXECUTABLE) $(BUILD_DIR)
 

@@ -1,11 +1,10 @@
 #ifndef NODE_H__
 #define NODE_H__
-#include <stdint.h>
 #include <mutex> // std::mutex, std::lock_guard
+#include <stdint.h>
 
-template <typename T> class node {
-  private:
-	std::mutex mtx;
+template <typename T> 
+class node {
 
   public:
 	uint32_t key;
@@ -14,7 +13,17 @@ template <typename T> class node {
 	node(T item);
 	node(T item, uint32_t key);
 	uint32_t hash();
+};
+
+
+template <typename T> 
+class nodeFine : public node<T> {
+  private:
+	std::mutex mtx;
+
+  public:
 	void lock();
 	void unlock();
-};
+}; 
+
 #endif

@@ -17,12 +17,15 @@ template <class T> node<T>::node(T item, uint32_t key) {
 
 template <class T> uint32_t node<T>::hash() { return (uint32_t)std::hash<T>()(this->item); }
 
-template <class T> void node<T>::lock() {
+
+//node Lock for fine Grained
+
+template <class T> void nodeFine<T>::lock() {
 	mtx.lock();
 	return;
 }
 
-template <class T> void node<T>::unlock() {
+template <class T> void nodeFine<T>::unlock() {
 	mtx.unlock();
 	return;
 }
