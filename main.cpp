@@ -15,7 +15,8 @@ int main(int argc, char *argv[]){
 
 	CoarseList<int> list;
 	runtest("testcases/basic.txt", list);
-	runtest("testcases/remove.txt", list);
+	//runtest("testcases/remove.txt", list);
+	runtest("testcases/large.txt", list);
 
 	return 0;
 }
