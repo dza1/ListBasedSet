@@ -7,7 +7,9 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
-template <typename T> class CoarseList { // The class
+#include "setlist.h"
+
+template <typename T> class CoarseList : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;

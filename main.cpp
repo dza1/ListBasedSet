@@ -9,15 +9,17 @@
 using namespace termcolor;
 #include <set>
 
-void runtest(string name);
+void runtest(string name, SetList<int> &list);
 
 int main(int argc, char *argv[]){
-	runtest("testcases/basic.txt");
+
+	CoarseList<int> list;
+	runtest("testcases/basic.txt", list);
 
 	return 0;
 }
 
-void runtest(string name) {
+void runtest(string name, SetList<int> &list) {
 	ifstream file(name);
 	string line;
 	vector<vector<int>> cases;
@@ -50,8 +52,6 @@ void runtest(string name) {
 	}
 
 	// Run test Cases
-	CoarseList<int> list;
-
 	cout<<"Running: "<<cases.size()<<" parallel cases"<<endl;
 	#pragma omp parallel
 	#pragma omp for
