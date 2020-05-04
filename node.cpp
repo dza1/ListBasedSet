@@ -15,10 +15,17 @@ template <class T> node<T>::node(T item, uint32_t key) {
 	this->item = item;
 }
 
-template <class T> uint32_t node<T>::hash() { 
-	return (uint32_t)std::hash<T>()(this->item); 
+template <class T> uint32_t node<T>::hash() { return (uint32_t)std::hash<T>()(this->item); }
 
-	}
+template <class T> void node<T>::lock() {
+	mtx.lock();
+	return;
+}
+
+template <class T> void node<T>::unlock() {
+	mtx.unlock();
+	return;
+}
 
 template class node<int>;
 template class node<float>;

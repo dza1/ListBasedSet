@@ -2,21 +2,19 @@
 using namespace std;
 #include "Coarse_Grained.h"
 #include "node.h"
+#include <assert.h>
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
 
-template <class T>
-CoarseList<T>::CoarseList() {
-	head = new node<T>(0,0);
-	head->next = new node<T>(0,UINT32_MAX);
+template <class T> CoarseList<T>::CoarseList() {
+	head = new node<T>(0, 0);
+	head->next = new node<T>(0, UINT32_MAX);
 }
 
-template <class T>
-bool CoarseList<T>::add(T item) {
+template <class T> bool CoarseList<T>::add(T item) {
 	try {
-		node<T> *pred;
-		node<T> *curr;
+		node<T> *pred, *curr;
 		// lock_guard<std::mutex> g(mtx);
 		mtx.lock();
 		pred = head;
@@ -24,6 +22,7 @@ bool CoarseList<T>::add(T item) {
 		uint32_t key = (uint32_t)item; // Need to be changed to hash
 
 		while (curr->key < key) {
+			assert(curr->next != NULL);
 			pred = curr;
 			curr = curr->next;
 		}
@@ -54,6 +53,77 @@ bool CoarseList<T>::add(T item) {
 		return false;
 	}
 }
+
+template <class T> bool CoarseList<T>::remove(T item) {
+	node<T> *pred, *curr;
+	uint32_t key = (uint32_t)item;
+	mtx.lock();
+
+	try {
+		pred = head;
+		curr = pred->next;
+		while (curr->key < key) {
+			assert(curr->next != NULL);
+			pred = curr;
+			curr = curr->next;
+		}
+		if (key == curr->key) {
+			pred->next = curr->next;
+			delete curr;
+			mtx.unlock();
+			return true;
+		} else {
+			mtx.unlock();
+			return false;
+		}
+	}
+	// Exception handling
+	catch (exception &e) {
+		mtx.unlock();
+		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Standard exception: " << e.what() << endl;
+		return false;
+	} catch (...) {
+		mtx.unlock();
+		cerr << "Error during remove the item: " << item << std::endl;
+		return false;
+	}
+}
+
+template <class T> bool CoarseList<T>::contains(T item) {
+	node<T> *pred, *curr;
+	uint32_t key = (uint32_t)item;
+	mtx.lock();
+
+	try {
+		pred = head;
+		curr = pred->next;
+		while (curr->key < key) {
+			assert(curr->next != NULL);
+			pred = curr;
+			curr = curr->next;
+		}
+		if (key == curr->key) {
+			mtx.unlock();
+			return true;
+		} else {
+			mtx.unlock();
+			return false;
+		}
+	}
+	// Exception handling
+	catch (exception &e) {
+		mtx.unlock();
+		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Standard exception: " << e.what() << endl;
+		return false;
+	} catch (...) {
+		mtx.unlock();
+		cerr << "Error during remove the item: " << item << std::endl;
+		return false;
+	}
+}
+
 
 template class CoarseList<int>;
 template class CoarseList<float>;

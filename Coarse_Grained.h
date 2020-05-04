@@ -1,3 +1,5 @@
+#ifndef COARSE_GRAINED_H__
+#define COARSE_GRAINED_H__
 #include <iostream>
 using namespace std;
 #include "node.h"
@@ -5,15 +7,16 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
-
-template<typename T>
-class CoarseList { // The class
+template <typename T> class CoarseList { // The class
   private:
-   T item;
+	T item;
 	std::mutex mtx;
 
   public:
 	node<T> *head;
 	CoarseList();
-	bool add (T item);
+	bool add(T item);
+	bool remove(T item);
+	bool contains(T item);
 };
+#endif
