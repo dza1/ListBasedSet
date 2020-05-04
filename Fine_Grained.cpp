@@ -1,131 +1,149 @@
 #include <iostream>
 using namespace std;
-#include "Coarse_Grained.h"
+#include "Fine_Grained.h"
+#include "key.h"
 #include "node.h"
 #include <assert.h>
-#include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
-#include "key.h" 
 
-template <class T> CoarseList<T>::CoarseList() {
-	head = new node<T>(0, INT32_MIN);
-	head->next = new node<T>(0, INT32_MAX);
+template <class T> FineList<T>::FineList() {
+	head = new nodeFine<T>(0, INT32_MIN);
+	head->next = new nodeFine<T>(0, INT32_MAX);
 }
 
-template <class T> bool CoarseList<T>::add(T item) {
+template <class T> bool FineList<T>::add(T item) {
+	nodeFine<T> *pred, *curr;
 	try {
-		node<T> *pred, *curr;
+		int32_t key = key_calc<T>(item);
 		// lock_guard<std::mutex> g(mtx);
-		mtx.lock();
+		head->lock();
 		pred = head;
 		curr = pred->next;
-		 
-		int32_t key = key_calc<T>(item);
+		curr->lock();
 
 		while (curr->key < key) {
 			assert(curr->next != NULL);
+			pred->unlock();
 			pred = curr;
 			curr = curr->next;
+			curr->lock();
 		}
 
 		// Item already in the set
 		if (key == curr->key) {
-			mtx.unlock();
+			pred->unlock();
+			curr->unlock();
 			return false;
 		}
 
 		// Add item to the set
-		node<T> *n = new node<T>(item);
+		nodeFine<T> *n = new nodeFine<T>(item);
 		n->next = curr;
 		pred->next = n;
-		mtx.unlock();
+		pred->unlock();
+		curr->unlock();
 		return true;
 	}
 
 	// Exception handling
 	catch (exception &e) {
-		mtx.unlock();
+		pred->unlock();
+		curr->unlock();
 		cerr << "Error during add the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		mtx.unlock();
+		pred->unlock();
+		curr->unlock();
 		cerr << "Error during add the item: " << item << std::endl;
 		return false;
 	}
 }
 
-template <class T> bool CoarseList<T>::remove(T item) {
-	node<T> *pred, *curr;
+template <class T> bool FineList<T>::remove(T item) {
+	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
-	mtx.lock();
+	head->lock();
 
 	try {
 		pred = head;
 		curr = pred->next;
+		curr->lock();
 		while (curr->key < key) {
 			assert(curr->next != NULL);
+			pred->unlock();
 			pred = curr;
 			curr = curr->next;
+			curr->lock();
 		}
 		if (key == curr->key) {
 			pred->next = curr->next;
+			pred->unlock();
+			curr->unlock();
 			delete curr;
-			mtx.unlock();
 			return true;
 		} else {
-			mtx.unlock();
+			pred->unlock();
+			curr->unlock();
 			return false;
 		}
 	}
 	// Exception handling
 	catch (exception &e) {
-		mtx.unlock();
+		pred->unlock();
+			curr->unlock();
 		cerr << "Error during remove the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		mtx.unlock();
+		pred->unlock();
+			curr->unlock();
 		cerr << "Error during remove the item: " << item << std::endl;
 		return false;
 	}
 }
 
-template <class T> bool CoarseList<T>::contains(T item) {
-	node<T> *pred, *curr;
+template <class T> bool FineList<T>::contains(T item) {
+	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
-	mtx.lock();
+	head->lock();
 
 	try {
 		pred = head;
 		curr = pred->next;
+		curr->lock();
 		while (curr->key < key) {
 			assert(curr->next != NULL);
+			pred->unlock();
 			pred = curr;
 			curr = curr->next;
+			curr->lock();
 		}
 		if (key == curr->key) {
-			mtx.unlock();
+			pred->unlock();
+			curr->unlock();
 			return true;
 		} else {
-			mtx.unlock();
+			pred->unlock();
+			curr->unlock();
 			return false;
 		}
 	}
 	// Exception handling
 	catch (exception &e) {
-		mtx.unlock();
+		pred->unlock();
+			curr->unlock();
 		cerr << "Error during remove the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		mtx.unlock();
+		pred->unlock();
+			curr->unlock();
 		cerr << "Error during remove the item: " << item << std::endl;
 		return false;
 	}
 }
 
-
-template class CoarseList<int>;
-//template class CoarseList<float>;
+template class FineList<int>;
+// template class FineList<float>;

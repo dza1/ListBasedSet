@@ -1,4 +1,5 @@
 #include "Coarse_Grained.h"
+#include "Fine_Grained.h"
 #include <omp.h>
 //#include <stdint.h>
 #include "stdio.h"
@@ -13,7 +14,7 @@ void runtest(string name, SetList<int> &list);
 
 int main(int argc, char *argv[]){
 
-	CoarseList<int> list;
+	FineList<int> list;
 	runtest("testcases/basic.txt", list);
 
 	return 0;
@@ -53,8 +54,8 @@ void runtest(string name, SetList<int> &list) {
 
 	// Run test Cases
 	cout<<"Running: "<<cases.size()<<" parallel cases"<<endl;
-	#pragma omp parallel
-	#pragma omp for
+	// #pragma omp parallel
+	// #pragma omp for
 	for (const auto &i : cases) {
 		for (const auto &j : i) {
 			list.add(j);
