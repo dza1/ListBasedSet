@@ -2,17 +2,18 @@
 #define NODE_H__
 #include <mutex> // std::mutex, std::lock_guard
 #include <stdint.h>
+#include "key.h"
 
 template <typename T> 
 class node {
 
   public:
-	uint32_t key;
+	int32_t key;
 	node *next;
 	T item;
-	node(T item);
-	node(T item, uint32_t key);
-	uint32_t hash();
+	explicit node(T item);
+	explicit node(T item, int32_t key);
+	int32_t hash();
 };
 
 
@@ -22,6 +23,8 @@ class nodeFine : public node<T> {
 	std::mutex mtx;
 
   public:
+  	using node<T>::node;
+	nodeFine *next;
 	void lock();
 	void unlock();
 }; 

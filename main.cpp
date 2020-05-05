@@ -1,4 +1,5 @@
 #include "Coarse_Grained.h"
+#include "Fine_Grained.h"
 #include <omp.h>
 //#include <stdint.h>
 #include "stdio.h"
@@ -15,11 +16,20 @@ int main(int argc, char *argv[]){
 
 	SetList<int> *list;
 	
+	// CoarseList
 	list = new CoarseList<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
 
 	list = new CoarseList<int>();
+	runtest("testcases/large.txt", list);
+
+	// FineList
+	list = new FineList<int>();
+	runtest("testcases/basic.txt", list);
+	runtest("testcases/remove.txt", list);
+
+	list = new FineList<int>();
 	runtest("testcases/large.txt", list);
 
 	return 0;
@@ -69,7 +79,7 @@ void runtest(string name, SetList<int> *list) {
 	// Run test Cases
 	#pragma omp parallel
 	#pragma omp for
-	for (auto it = cases.begin(); it != cases.end(); it++) {
+	for (auto it = cases.begin(); it < cases.end(); it++) {
 		for (const auto &j : *it) {
 			if (j < 0)
 				list->remove(-j);
