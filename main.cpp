@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono> 
 #include "termcolor.hpp"
 using namespace termcolor;
 #include <set>
@@ -76,6 +77,8 @@ void runtest(string name, SetList<int> *list) {
 	cout<<endl;
 	mutex outl;
 
+	auto start = chrono::high_resolution_clock::now();
+
 	// Run test Cases
 	#pragma omp parallel
 	#pragma omp for
@@ -94,6 +97,10 @@ void runtest(string name, SetList<int> *list) {
 		}
 	}
 
+	auto finish = chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = finish - start;
+	auto ms = chrono::duration_cast<chrono::milliseconds>(elapsed).count();
+
 	// Compare to Valid
 	bool correct = true;
 	for (const auto &i : valid) {
@@ -104,6 +111,6 @@ void runtest(string name, SetList<int> *list) {
 	}
 
 	if (correct) {
-		cout<<green<<"Test succeeded"<<reset<<" ("<<name<<")"<<endl;
+		cout<<green<<"Test succeeded"<<reset<<" ("<<name<<")"<<" in "<<ms<<"ms"<<endl;
 	}
 }
