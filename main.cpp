@@ -89,8 +89,8 @@ void runtest(string name, SetList<int> *list) {
 				throw new invalid_argument("0 not allowed");
 		}
 		{
-			const lock_guard<mutex> lock(outl);
-			cout<<"Added "<<it->size()<<" by "<<cyan<<"Thread "<<omp_get_thread_num()<<reset<<endl;
+			//const lock_guard<mutex> lock(outl);
+			//cout<<"Added "<<it->size()<<" by "<<cyan<<"Thread "<<omp_get_thread_num()<<reset<<endl;
 		}
 	}
 
