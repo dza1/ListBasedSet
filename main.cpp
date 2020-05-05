@@ -42,7 +42,7 @@ void runtest(string name, SetList<int> &list) {
 				x.push_back(t);
 				
 				if (t < 0)
-					valid.erase(t);
+					valid.erase(-t);
 				else if (t > 0)
 					valid.insert(t);
 				else
@@ -68,7 +68,7 @@ void runtest(string name, SetList<int> &list) {
 	for (auto it = cases.begin(); it != cases.end(); it++) {
 		for (const auto &j : *it) {
 			if (j < 0)
-				list.remove(j);
+				list.remove(-j);
 			else if (j > 0)
 				list.add(j);
 			else
