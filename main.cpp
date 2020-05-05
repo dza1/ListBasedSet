@@ -1,5 +1,6 @@
 #include "Coarse_Grained.h"
 #include "Fine_Grained.h"
+#include "Optimistic.h"
 #include <omp.h>
 //#include <stdint.h>
 #include "stdio.h"
@@ -31,6 +32,14 @@ int main(int argc, char *argv[]){
 	runtest("testcases/remove.txt", list);
 
 	list = new FineList<int>();
+	runtest("testcases/large.txt", list);
+
+	// Optimistic
+	list = new Optimistic<int>();
+	runtest("testcases/basic.txt", list);
+	runtest("testcases/remove.txt", list);
+
+	list = new Optimistic<int>();
 	runtest("testcases/large.txt", list);
 
 	return 0;
