@@ -13,7 +13,7 @@ template <class T> FineList<T>::FineList() {
 }
 
 template <class T> bool FineList<T>::add(T item) {
-	nodeFine<T> *pred, *curr;
+	nodeFine<T> *pred=NULL, *curr=NULL;
 	try {
 		int32_t key = key_calc<T>(item);
 		// lock_guard<std::mutex> g(mtx);

@@ -1,24 +1,27 @@
 #include "Coarse_Grained.h"
 #include "Fine_Grained.h"
+#include "Lock_free.h"
 #include "Optimistic.h"
 #include <omp.h>
 //#include <stdint.h>
 #include "stdio.h"
+#include "termcolor.hpp"
+#include <chrono>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <chrono> 
-#include "termcolor.hpp"
 using namespace termcolor;
 #include <set>
 
 void runtest(string name, SetList<int> *list);
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 
 	SetList<int> *list;
-	
+
 	// CoarseList
+	cout<<endl<<endl <<"CoarseList:" <<endl;
+
 	list = new CoarseList<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
@@ -27,6 +30,8 @@ int main(int argc, char *argv[]){
 	runtest("testcases/large.txt", list);
 
 	// FineList
+	cout<<endl<<endl <<"FineList:" <<endl;
+
 	list = new FineList<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
@@ -35,11 +40,23 @@ int main(int argc, char *argv[]){
 	runtest("testcases/large.txt", list);
 
 	// Optimistic
+	cout<<endl<<endl <<"Optimistic:" <<endl;
+
 	list = new Optimistic<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
 
-	list = new Optimistic<int>();
+	// list = new Optimistic<int>();
+	// runtest("testcases/large.txt", list);
+
+	// Lock Free
+	cout << endl << endl << "Lock Free:" << endl;
+
+	list = new LockFree<int>();
+	runtest("testcases/basic.txt", list);
+	runtest("testcases/remove.txt", list);
+
+	list = new LockFree<int>();
 	runtest("testcases/large.txt", list);
 
 	return 0;
@@ -52,19 +69,16 @@ void runtest(string name, SetList<int> *list) {
 	set<int> valid;
 
 	// Load Test cases
-	if (file.is_open())
-	{
-		while ( getline (file, line) )
-		{
+	if (file.is_open()) {
+		while (getline(file, line)) {
 			vector<int> x;
 			string segment;
 			stringstream l(line);
 
-			while(getline(l, segment, ' '))
-			{
+			while (getline(l, segment, ' ')) {
 				auto t = stoi(segment);
 				x.push_back(t);
-				
+
 				if (t < 0)
 					valid.erase(-t);
 				else if (t > 0)
@@ -77,32 +91,35 @@ void runtest(string name, SetList<int> *list) {
 		}
 
 		file.close();
-	}
-	else {
+	} else {
 		cout << "Unable to open file";
 		return;
 	}
 
-	cout<<endl;
+	cout << endl;
 	mutex outl;
 
 	auto start = chrono::high_resolution_clock::now();
 
-	// Run test Cases
-	#pragma omp parallel
-	#pragma omp for
+// Run test Cases
+#pragma omp parallel
+#pragma omp for
 	for (auto it = cases.begin(); it < cases.end(); it++) {
 		for (const auto &j : *it) {
-			if (j < 0)
+			if (j < 0) {
 				list->remove(-j);
-			else if (j > 0)
+				if (list->contains(j)) {
+					cout << red << "Error: " << reset << j << " in list" << endl;
+				}
+			} else if (j > 0)
 				list->add(j);
+
 			else
 				throw new invalid_argument("0 not allowed");
 		}
 		{
-			//const lock_guard<mutex> lock(outl);
-			//cout<<"Added "<<it->size()<<" by "<<cyan<<"Thread "<<omp_get_thread_num()<<reset<<endl;
+			// const lock_guard<mutex> lock(outl);
+			// cout<<"Added "<<it->size()<<" by "<<cyan<<"Thread "<<omp_get_thread_num()<<reset<<endl;
 		}
 	}
 
@@ -114,12 +131,13 @@ void runtest(string name, SetList<int> *list) {
 	bool correct = true;
 	for (const auto &i : valid) {
 		if (!list->contains(i)) {
-			cout<<red<<"Error: "<<reset<<i<<" not in list"<<endl;
+			cout << red << "Error: " << reset << i << " not in list" << endl;
 			correct = false;
 		}
 	}
 
 	if (correct) {
-		cout<<green<<"Test succeeded"<<reset<<" ("<<name<<")"<<" in "<<ms<<"ms"<<endl;
+		cout << green << "Test succeeded" << reset << " (" << name << ")"
+			 << " in " << ms << "ms" << endl;
 	}
 }

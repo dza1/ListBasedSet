@@ -3,6 +3,7 @@
 #include <mutex> // std::mutex, std::lock_guard
 #include <stdint.h>
 #include "key.h"
+#include <atomic>
 
 template <typename T> 
 class node {
@@ -21,12 +22,22 @@ template <typename T>
 class nodeFine : public node<T> {
   private:
 	std::mutex mtx;
+	
 
   public:
   	using node<T>::node;
 	nodeFine *next;
 	void lock();
 	void unlock();
+}; 
+
+template <typename T> 
+class nodeAtom : public node<T> {
+  private:
+
+  public:
+  	using node<T>::node;
+	std::atomic<nodeAtom<T>*> next;
 }; 
 
 #endif

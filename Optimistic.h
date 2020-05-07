@@ -8,12 +8,7 @@ using namespace std;
 #include <stdint.h>
 
 #include "setlist.h"
-
-template <typename T>
-struct Window_t{
-	nodeFine<T> *pred;
-	nodeFine<T> *curr;
-};
+#include "Window.h"
 
 template <typename T> class Optimistic : public SetList<T> { // The class
   private:

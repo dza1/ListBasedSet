@@ -15,7 +15,6 @@ template <class T> Optimistic<T>::Optimistic() {
 template <class T> bool Optimistic<T>::add(T item) {
 	Window_t<T> w;
 	try {
-		while (true) {
 			w = find(item);
 			int32_t key = key_calc<T>(item);
 
@@ -25,19 +24,12 @@ template <class T> bool Optimistic<T>::add(T item) {
 				return false;
 			}
 
-			// Item not reachable
-			if (head == w.curr) {
-				//printf("Item %i not reachable\n", item);
-				continue;
-			}
-
 			// Add item to the set
 			nodeFine<T> *n = new nodeFine<T>(item);
 			n->next = w.curr;
 			w.pred->next = n;
 			unlock(w);
 			return true;
-		}
 	}
 
 	// Exception handling
@@ -59,10 +51,6 @@ template <class T> bool Optimistic<T>::remove(T item) {
 		w = find(item);
 		int32_t key = key_calc<T>(item);
 
-		// Item not reachable, unlocked in Window_t class
-		if (head == w.curr) {
-			return false;
-		}
 		if (key == w.curr->key) {
 			w.pred->next = w.curr->next;
 			unlock(w);
@@ -92,10 +80,6 @@ template <class T> bool Optimistic<T>::contains(T item) {
 		w = find(item);
 		int32_t key = key_calc<T>(item);
 
-		// Item not reachable, unlocked in Window_t class
-		if (head == w.curr) {
-			return false;
-		}
 		if (key == w.curr->key) {
 			unlock(w);
 			return true;
@@ -121,27 +105,25 @@ template <class T> Window_t<T> Optimistic<T>::find(T item) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	// lock_guard<std::mutex> g(mtx);
-	pred = head;
-	curr = pred->next;
+	while (true) {
+		pred = head;
+		curr = pred->next;
 
-	while (curr->key < key) {
-		assert(curr->next != NULL);
-		pred = curr;
-		curr = curr->next;
+		while (curr->key < key) {
+			assert(curr->next != NULL);
+			pred = curr;
+			curr = curr->next;
+		}
+
+		Window_t<T> w{pred, curr};
+		lock(w);
+		if (validate(w) == true) {
+			return w;
+		} else { // not reachable
+			unlock(w);
+		}
+
 	}
-
-	Window_t<T> w{pred, curr};
-	lock(w);
-	if (validate(w) == true) {
-		return w;
-	} else { // not reachable
-		unlock(w);
-		w.pred = head;
-		w.curr = head;
-		return w;
-	}
-
-	return w;
 }
 
 template <class T> bool Optimistic<T>::validate(Window_t<T> w) {
@@ -150,7 +132,7 @@ template <class T> bool Optimistic<T>::validate(Window_t<T> w) {
 		assert(n->next != NULL);
 		if (n == w.pred) {
 			if (n->next != w.curr) {
-				//printf("%i to %i not Reachable\n", w.pred->key, w.curr->key);
+				// printf("%i to %i not Reachable\n", w.pred->key, w.curr->key);
 			}
 			return n->next == w.curr;
 		}
