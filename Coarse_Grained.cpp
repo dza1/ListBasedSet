@@ -1,16 +1,24 @@
 #include <iostream>
 using namespace std;
 #include "Coarse_Grained.h"
+#include "key.h"
 #include "node.h"
 #include <assert.h>
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
-#include "key.h" 
 
 template <class T> CoarseList<T>::CoarseList() {
 	head = new node<T>(0, INT32_MIN);
 	head->next = new node<T>(0, INT32_MAX);
+}
+
+template <class T> CoarseList<T>::~CoarseList() {
+	while (head != NULL) {
+		node<T>* oldHead = head;
+		head=head->next;
+		delete oldHead;
+	} 
 }
 
 template <class T> bool CoarseList<T>::add(T item) {
@@ -20,7 +28,7 @@ template <class T> bool CoarseList<T>::add(T item) {
 		mtx.lock();
 		pred = head;
 		curr = pred->next;
-		 
+
 		int32_t key = key_calc<T>(item);
 
 		while (curr->key < key) {
@@ -126,6 +134,5 @@ template <class T> bool CoarseList<T>::contains(T item) {
 	}
 }
 
-
 template class CoarseList<int>;
-//template class CoarseList<float>;
+// template class CoarseList<float>;

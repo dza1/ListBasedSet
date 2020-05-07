@@ -12,6 +12,14 @@ template <class T> Optimistic<T>::Optimistic() {
 	head->next = new nodeFine<T>(0, INT32_MAX);
 }
 
+template <class T> Optimistic<T>::~Optimistic() {
+	while (head != NULL) {
+		nodeFine<T>* oldHead = head;
+		head=head->next;
+		delete oldHead;
+	} 
+}
+
 template <class T> bool Optimistic<T>::add(T item) {
 	Window_t<T> w;
 	try {

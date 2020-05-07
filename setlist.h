@@ -6,6 +6,8 @@ template <typename T> class SetList {
 	virtual bool add(T item) = 0;
 	virtual bool remove(T item) = 0;
 	virtual bool contains(T item) = 0;
+	SetList(){;}
+	virtual ~SetList(){; } 
 };
 
 #endif

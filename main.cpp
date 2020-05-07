@@ -19,46 +19,55 @@ int main(int argc, char *argv[]) {
 
 	SetList<int> *list;
 
-	// CoarseList
-	cout<<endl<<endl <<"CoarseList:" <<endl;
+	///////////////////// CoarseList///////////////////////
+	cout << endl << endl << "CoarseList:" << endl;
 
 	list = new CoarseList<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
 
+	delete list;
 	list = new CoarseList<int>();
 	runtest("testcases/large.txt", list);
+	delete list;
 
-	// FineList
-	cout<<endl<<endl <<"FineList:" <<endl;
+
+	////////////////////// FineList /////////////////////
+	cout << endl << endl << "FineList:" << endl;
 
 	list = new FineList<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
+	delete list;
 
 	list = new FineList<int>();
 	runtest("testcases/large.txt", list);
+	delete list;
 
-	// Optimistic
-	cout<<endl<<endl <<"Optimistic:" <<endl;
+
+	///////////////////// Optimistic /////////////////////
+	cout << endl << endl << "Optimistic:" << endl;
 
 	list = new Optimistic<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
+	delete list;
 
-	// list = new Optimistic<int>();
-	// runtest("testcases/large.txt", list);
+	 list = new Optimistic<int>();
+	runtest("testcases/large.txt", list);
+	delete list;
 
-	// Lock Free
+	///////////////////// Lock Free /////////////////////
 	cout << endl << endl << "Lock Free:" << endl;
 
 	list = new LockFree<int>();
 	runtest("testcases/basic.txt", list);
 	runtest("testcases/remove.txt", list);
+	delete list;
 
 	list = new LockFree<int>();
 	runtest("testcases/large.txt", list);
-
+	delete list;
 	return 0;
 }
 

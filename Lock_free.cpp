@@ -20,6 +20,14 @@ template <class T> LockFree<T>::LockFree() {
 	head->next = new nodeAtom<T>(0, INT32_MAX);
 }
 
+template <class T> LockFree<T>::~LockFree() {
+	while (head != NULL) {
+		nodeAtom<T>* oldHead = head;
+		head=head->next;
+		delete oldHead;
+	} 
+}
+
 template <class T> bool LockFree<T>::add(T item) {
 	Window_at_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);

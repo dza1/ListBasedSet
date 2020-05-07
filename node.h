@@ -1,43 +1,42 @@
 #ifndef NODE_H__
 #define NODE_H__
+#include <atomic>
 #include <mutex> // std::mutex, std::lock_guard
 #include <stdint.h>
-#include "key.h"
-#include <atomic>
 
-template <typename T> 
-class node {
+template <typename T> class node_virt {
 
   public:
 	int32_t key;
-	node *next;
 	T item;
-	explicit node(T item);
-	explicit node(T item, int32_t key);
+	node_virt(T item);
+	node_virt(T item, int32_t key);
 	int32_t hash();
 };
 
+template <typename T> class node : public node_virt<T> {
 
-template <typename T> 
-class nodeFine : public node<T> {
+  public:
+	using node_virt<T>::node_virt;
+	node *next = nullptr;
+};
+
+template <typename T> class nodeFine : public node_virt<T> {
   private:
 	std::mutex mtx;
-	
 
   public:
-  	using node<T>::node;
-	nodeFine *next;
+	using node_virt<T>::node_virt;
+	nodeFine *next = nullptr;
 	void lock();
 	void unlock();
-}; 
+};
 
-template <typename T> 
-class nodeAtom : public node<T> {
+template <typename T> class nodeAtom : public node_virt<T> {
   private:
-
   public:
-  	using node<T>::node;
-	std::atomic<nodeAtom<T>*> next;
-}; 
+	using node_virt<T>::node_virt;
+	std::atomic<nodeAtom<T> *> next {NULL};
+};
 
 #endif

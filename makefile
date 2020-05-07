@@ -9,7 +9,7 @@
 CXX=g++
 CFLAGS= -Wall  -fopenmp -c -g -O0 -MMD
 LDFLAGS=  -fopenmp
-SOURCES=main.cpp node.cpp Fine_Grained.cpp Coarse_Grained.cpp Optimistic.cpp Lock_free.cpp
+SOURCES=main.cpp node.cpp  Coarse_Grained.cpp Fine_Grained.cpp Optimistic.cpp Lock_free.cpp
 BUILD_DIR = ./.build
 OBJECTS=$(SOURCES:%.cpp=$(BUILD_DIR)/%.o)
 DEP = $(OBJECTS:%.o=%.d)

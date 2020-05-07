@@ -32,6 +32,7 @@ template <typename T> class LockFree : public SetList<T> { // The class
   public:
 	nodeAtom<T>* head;
 	LockFree();
+	~LockFree();
 	bool add(T item);
 	bool remove(T item);
 	bool contains(T item);

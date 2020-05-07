@@ -17,6 +17,7 @@ template <typename T> class FineList : public SetList<T> { // The class
   public:
 	nodeFine<T> *head;
 	FineList();
+	~FineList();
 	bool add(T item);
 	bool remove(T item);
 	bool contains(T item);

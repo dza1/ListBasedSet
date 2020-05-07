@@ -17,6 +17,8 @@ template <typename T> class CoarseList : public SetList<T> { // The class
   public:
 	node<T> *head;
 	CoarseList();
+	~CoarseList();
+
 	bool add(T item);
 	bool remove(T item);
 	bool contains(T item);

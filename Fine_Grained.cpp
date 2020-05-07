@@ -12,6 +12,14 @@ template <class T> FineList<T>::FineList() {
 	head->next = new nodeFine<T>(0, INT32_MAX);
 }
 
+template <class T> FineList<T>::~FineList() {
+	while (head != NULL) {
+		nodeFine<T>* oldHead = head;
+		head=head->next;
+		delete oldHead;
+	} 
+}
+
 template <class T> bool FineList<T>::add(T item) {
 	nodeFine<T> *pred=NULL, *curr=NULL;
 	try {
