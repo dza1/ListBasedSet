@@ -14,12 +14,13 @@ using namespace termcolor;
 #include <set>
 
 void runtest(string name, SetList<int> *list);
+void check(string name, SetList<int> *list);
 
 int main(int argc, char *argv[]) {
 
 	SetList<int> *list;
 
-	///////////////////// CoarseList///////////////////////
+	/////////////////// CoarseList///////////////////////
 	cout << endl << endl << "CoarseList:" << endl;
 
 	list = new CoarseList<int>();
@@ -28,9 +29,10 @@ int main(int argc, char *argv[]) {
 
 	delete list;
 	list = new CoarseList<int>();
-	runtest("testcases/large.txt", list);
+	runtest("testcases/pre.txt", list);
+	runtest("testcases/main.txt", list);
+	check("testcases/main.txt", list);
 	delete list;
-
 
 	////////////////////// FineList /////////////////////
 	cout << endl << endl << "FineList:" << endl;
@@ -41,9 +43,10 @@ int main(int argc, char *argv[]) {
 	delete list;
 
 	list = new FineList<int>();
-	runtest("testcases/large.txt", list);
+	runtest("testcases/pre.txt", list);
+	runtest("testcases/main.txt", list);
+	check("testcases/main.txt", list);
 	delete list;
-
 
 	///////////////////// Optimistic /////////////////////
 	cout << endl << endl << "Optimistic:" << endl;
@@ -53,8 +56,10 @@ int main(int argc, char *argv[]) {
 	runtest("testcases/remove.txt", list);
 	delete list;
 
-	 list = new Optimistic<int>();
-	runtest("testcases/large.txt", list);
+	list = new Optimistic<int>();
+	runtest("testcases/pre.txt", list);
+	runtest("testcases/main.txt", list);
+	check("testcases/main.txt", list);
 	delete list;
 
 	///////////////////// Lock Free /////////////////////
@@ -66,7 +71,9 @@ int main(int argc, char *argv[]) {
 	delete list;
 
 	list = new LockFree<int>();
-	runtest("testcases/large.txt", list);
+	runtest("testcases/pre.txt", list);
+	runtest("testcases/main.txt", list);
+	check("testcases/main.txt", list);
 	delete list;
 	return 0;
 }
@@ -149,4 +156,69 @@ void runtest(string name, SetList<int> *list) {
 		cout << green << "Test succeeded" << reset << " (" << name << ")"
 			 << " in " << ms << "ms" << endl;
 	}
+}
+
+void check(string name, SetList<int> *list) {
+	ifstream file(name);
+	string line;
+	set<int> valid;
+	set<int> invalid;
+
+	// Load Test cases
+	if (file.is_open()) {
+		while (getline(file, line)) {
+			vector<int> x;
+			string segment;
+			stringstream l(line);
+
+			while (getline(l, segment, ' ')) {
+				auto t = stoi(segment);
+
+				if(t<0){
+					invalid.insert(t);
+				}
+				else if (t > 0)
+					valid.insert(t);
+				else
+					throw new invalid_argument("0 not allowed");
+			}
+		}
+
+		file.close();
+	} else {
+		cout << "Unable to open file";
+		return;
+	}
+
+	cout << endl;
+	mutex outl;
+
+	auto start = chrono::high_resolution_clock::now();
+
+
+
+	// Compare to Valid
+	bool correct = true;
+	for (const auto &i : valid) {
+		if (!list->contains(i)) {
+			cout << red << "Error: " << reset << i << " not in list" << endl;
+			correct = false;
+		}
+	}
+
+	for (const auto &i : invalid) {
+		if (list->contains(i)) {
+			cout << red << "Error: " << reset << i << " in list" << endl;
+			correct = false;
+		}
+	}
+	
+	auto finish = chrono::high_resolution_clock::now();
+	chrono::duration<double> elapsed = finish - start;
+	auto ms = chrono::duration_cast<chrono::milliseconds>(elapsed).count();
+	if (correct) {
+		cout << green << "Test succeeded" << reset << " (" << name << ")"
+			 << " in " << ms << "ms" << endl;
+	}
+
 }

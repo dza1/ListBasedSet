@@ -12,6 +12,7 @@ template <typename T> class node_virt {
 	node_virt(T item);
 	node_virt(T item, int32_t key);
 	int32_t hash();
+	std::atomic<int> cnt;
 };
 
 template <typename T> class node : public node_virt<T> {

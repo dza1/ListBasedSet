@@ -18,6 +18,11 @@
             "label": "clean",
             "command": "make clean",
             "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "create testcases",
+            "command": "cd testcases && python3 permutations.py",
         }
     ]
 }
