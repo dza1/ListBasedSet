@@ -9,6 +9,8 @@ using namespace std;
 
 #define HASHMASK 0xFFFFFF00000000
 #define COUTNMASK 0x00000000FFFFFF
+
+
 template <class T> Optimistic_mem<T>::Optimistic_mem() {
 	head = new nodeFine_mem<T>(0, INT32_MIN);
 	head->next = new nodeFine_mem<T>(0, INT32_MAX);
@@ -65,11 +67,11 @@ template <class T> bool Optimistic_mem<T>::remove(T item) {
 			w.pred->next = w.curr->next;
 
 			unlock(w);
-			int i;
+			int i =0;
 			while ((w.curr->hash_mem & COUTNMASK) != 0) {
 				i++;
 				if (i > 10000000) {
-					cout << "wait" << endl;
+					cout << "wait "<<w.curr->key << endl;
 					i=0;
 				}
 			}
@@ -128,53 +130,62 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 	int32_t key = key_calc<T>(item);
 	// lock_guard<std::mutex> g(mtx);
 	int tid = omp_get_thread_num();
+
 	while (true) {
 		pred = head;
-		pred->hash_mem++;
+		head->hash_mem++;
+		//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 
-		int64_t hash = pred->next->hash_mem;
 		curr = pred->next;
+		int64_t hash = curr->hash_mem.load();
 
 		if (hash == 0) { // Check if hash was deledet, shouldn't happen
 			cerr << "Error with hash" << endl;
 			cout<<__LINE__<<endl;
 			pred->hash_mem--;
+			//printf("%i: Error %i rem hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 			continue;
 		}
-		if (atomic_compare_exchange_strong(&curr->hash_mem, &hash, hash + 1) == false) {
+		if (atomic_compare_exchange_strong(&pred->next->hash_mem, &hash, hash + 1) == false) {
 			pred->hash_mem--;
-			cout<<__LINE__<<endl;
+			//cout<<__LINE__<<endl;
+			//printf("%i: Error %i rem hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 			continue;
 		}
-		printf("%i: Ittem %i add hash: %i\n", tid, curr->key,(int)hash+1);
-		//printf("%i: Ittem %i add hash: %i\n", tid, curr->key,hash+1);
+		//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p\n", tid, curr->key,(int)hash+1,__LINE__,(void*)curr);
+		////printf("%i: Ittem %i add hash: %i Line: %i \n", tid, curr->key,hash+1);
 		while (curr->key < key) {
-			assert(curr->next != NULL);
+			
 			nodeFine_mem<T> *old = pred;
 
 			pred = curr;
-			hash = curr->next->hash_mem;
+			hash = curr->next->hash_mem.load();
 			curr = curr->next;
 			if (hash == 0) { // Check if hash was deleded, shouldn't happen
 				cerr << "Error with hash" << endl;
 				cout << __LINE__ << endl;
+				curr=pred;
+				pred=old;
 				continue;
 			}
 			if (atomic_compare_exchange_strong(&curr->hash_mem, &hash,hash + 1) == false) {
-				cout<<__LINE__<<endl;
+				//cout<<tid<<":"<<__LINE__<<endl;
+				curr=pred;
+				pred=old;
 				continue;
 			}
-			printf("%i: Ittem %i add hash: %i\n", tid, (int)curr->key,(int)hash+1);
+			assert(curr != NULL);
+			//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p  \n", tid, (int)curr->key,(int)hash+1,__LINE__,(void*)curr);
 			old->hash_mem--;
-			printf("%i: Ittem %i rem hash: %i\n", tid, old->key,(int)old->hash_mem);
+			//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p\n", tid, old->key,(int)old->hash_mem,__LINE__,(void*)old);
 		}
 
 		Window_at_t<nodeFine_mem<T>> w{pred, curr};
 		lock(w);
 		pred->hash_mem--;
 		curr->hash_mem--;
-		printf("%i: Ittem %i rem hash: %i\n", tid, pred->key,(int)pred->hash_mem);
-		printf("%i: Ittem %i rem hash: %i\n", tid, curr->key,(int)curr->hash_mem);
+		//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
+		//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p \n", tid, curr->key,(int)curr->hash_mem,__LINE__,(void*)curr);
 		if (validate(w) == true) {
 			return w;
 		} else { // not reachable
@@ -185,44 +196,44 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 
 template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>> w) {
 	nodeFine_mem<T> *n = head;
-	//n->hash_mem++;
-	//int64_t hash;
+	n->hash_mem++;
+	int64_t hash;
 
 	
 	nodeFine_mem<T> *curr;
 
 	while (n->key <= w.pred->key) {
-		assert(n->next != NULL);
+		
 
-		//hash = n->next->hash_mem;
+		hash = n->next->hash_mem;
 		curr = n->next;
-		// if (hash == 0) { // Check if hash was deledet, shouldn't happen
-		// 	cerr << "Error with hash" << endl;
-		// 	cout << __LINE__ << endl;
-		// 	continue;
-		// }
-		// if (atomic_compare_exchange_weak(&curr->hash_mem, &hash, hash + 1) == false) {
-		// 	// cout << __LINE__ << endl;
-		// 	continue;
-		// }
-
-		//printf("%i: Ittem %i add hash: %i\n", tid, curr->key, ((int)hash + 1));
+		if (hash == 0) { // Check if hash was deledet, shouldn't happen
+			cerr << "Error with hash" << endl;
+			cout << __LINE__ << endl;
+			continue;
+		}
+		if (atomic_compare_exchange_weak(&curr->hash_mem, &hash, hash + 1) == false) {
+			// cout << __LINE__ << endl;
+			continue;
+		}
+		assert(curr != NULL);
+		////printf("%i: Ittem %i add hash: %i Line: %i \n", tid, curr->key, ((int)hash + 1));
 
 		if (n == w.pred) {
 			if (curr != w.curr) {
-				// printf("%i to %i not reachable\n", w.pred->key, w.curr->key);
+				// //printf("%i to %i not reachable\n", w.pred->key, w.curr->key);
 			}
-			//n->hash_mem--;
-			//curr->hash_mem--;
+			n->hash_mem--;
+			curr->hash_mem--;
 			return curr == w.curr;
 		}
 
-		//n->hash_mem--;
-		//printf("%i: Ittem %i rem hash: %i\n", tid, curr->key, ((int)n->hash_mem));
+		n->hash_mem--;
+		////printf("%i: Ittem %i rem hash: %i Line: %i \n", tid, curr->key, ((int)n->hash_mem));
 		n = curr;
 	}
 	cout<<"not found"<<endl;
-	//curr->hash_mem--;
+	curr->hash_mem--;
 	return false;
 }
 

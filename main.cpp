@@ -16,81 +16,79 @@ using namespace termcolor;
 
 void runtest(string name, SetList<int> *list);
 void check(string name, SetList<int> *list);
-
 int main(int argc, char *argv[]) {
 
 	SetList<int> *list;
 
-	/////////////////// CoarseList///////////////////////
-	cout << endl << endl << "CoarseList:" << endl;
+	// /////////////////// CoarseList///////////////////////
+	// cout << endl << endl << "CoarseList:" << endl;
 
-	list = new CoarseList<int>();
-	runtest("testcases/basic.txt", list);
-	runtest("testcases/remove.txt", list);
+	// list = new CoarseList<int>();
+	// runtest("testcases/basic.txt", list);
+	// runtest("testcases/remove.txt", list);
 
-	delete list;
-	list = new CoarseList<int>();
-	runtest("testcases/pre.txt", list);
-	runtest("testcases/main.txt", list);
-	check("testcases/main.txt", list);
-	delete list;
+	// delete list;
+	// list = new CoarseList<int>();
+	// runtest("testcases/pre.txt", list);
+	// runtest("testcases/main.txt", list);
+	// check("testcases/main.txt", list);
+	// delete list;
 
-	////////////////////// FineList /////////////////////
-	cout << endl << endl << "FineList:" << endl;
+	// ////////////////////// FineList /////////////////////
+	// cout << endl << endl << "FineList:" << endl;
 
-	list = new FineList<int>();
-	runtest("testcases/basic.txt", list);
-	runtest("testcases/remove.txt", list);
-	delete list;
+	// list = new FineList<int>();
+	// runtest("testcases/basic.txt", list);
+	// runtest("testcases/remove.txt", list);
+	// delete list;
 
-	list = new FineList<int>();
-	runtest("testcases/pre.txt", list);
-	runtest("testcases/main.txt", list);
-	check("testcases/main.txt", list);
-	delete list;
+	// list = new FineList<int>();
+	// runtest("testcases/pre.txt", list);
+	// runtest("testcases/main.txt", list);
+	// check("testcases/main.txt", list);
+	// delete list;
 
 	///////////////////// Optimistic_mem /////////////////////
 	cout << endl << endl << "Optimistic_mem:" << endl;
-	for (size_t i = 0; i < 1000; i++) {
+
 		list = new Optimistic_mem<int>();
 		runtest("testcases/basic.txt", list);
 		runtest("testcases/remove.txt", list);
 		delete list;
-	}
-
+	for(int i=0; i<100;i++){
 	list = new Optimistic_mem<int>();
 	runtest("testcases/pre.txt", list);
 	runtest("testcases/main.txt", list);
 	check("testcases/main.txt", list);
 	delete list;
+	}
+	// ///////////////////// Optimistic /////////////////////
+	// cout << endl << endl << "Optimistic:" << endl;
 
-	///////////////////// Optimistic /////////////////////
-	cout << endl << endl << "Optimistic:" << endl;
+	// list = new Optimistic<int>();
+	// runtest("testcases/basic.txt", list);
+	// runtest("testcases/remove.txt", list);
+	// delete list;
 
-	list = new Optimistic<int>();
-	runtest("testcases/basic.txt", list);
-	runtest("testcases/remove.txt", list);
-	delete list;
+	// list = new Optimistic<int>();
+	// runtest("testcases/pre.txt", list);
+	// runtest("testcases/main.txt", list);
+	// check("testcases/main.txt", list);
+	// delete list;
+	// ///////////////////// Lock Free /////////////////////
+	// cout << endl << endl << "Lock Free:" << endl;
 
-	list = new Optimistic<int>();
-	runtest("testcases/pre.txt", list);
-	runtest("testcases/main.txt", list);
-	check("testcases/main.txt", list);
-	delete list;
-	///////////////////// Lock Free /////////////////////
-	cout << endl << endl << "Lock Free:" << endl;
+	// list = new LockFree<int>();
+	// runtest("testcases/basic.txt", list);
+	// runtest("testcases/remove.txt", list);
+	// delete list;
 
-	list = new LockFree<int>();
-	runtest("testcases/basic.txt", list);
-	runtest("testcases/remove.txt", list);
-	delete list;
-
-	list = new LockFree<int>();
-	runtest("testcases/pre.txt", list);
-	runtest("testcases/main.txt", list);
-	check("testcases/main.txt", list);
-	delete list;
-	return 0;
+	// list = new LockFree<int>();
+	// runtest("testcases/pre.txt", list);
+	// runtest("testcases/main.txt", list);
+	// check("testcases/main.txt", list);
+	// delete list;
+	// return 0;
 }
 
 void runtest(string name, SetList<int> *list) {
