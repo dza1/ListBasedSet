@@ -11,8 +11,7 @@ template <typename T> class node_virt {
 	T item;
 	node_virt(T item);
 	node_virt(T item, int32_t key);
-	int32_t hash();
-	std::atomic<int> cnt;
+	//std::atomic<int> cnt;
 };
 
 template <typename T> class node : public node_virt<T> {
@@ -37,7 +36,16 @@ template <typename T> class nodeAtom : public node_virt<T> {
   private:
   public:
 	using node_virt<T>::node_virt;
-	std::atomic<nodeAtom<T> *> next {NULL};
+	std::atomic<nodeAtom<T> *> next{NULL};
 };
 
-#endif
+template <typename T> class nodeFine_mem : public nodeFine<T> {
+  private:
+  public:
+	std::atomic<int64_t> hash_mem{NULL};
+	nodeFine_mem *next = nullptr;
+	nodeFine_mem(T item);
+	nodeFine_mem(T item, int32_t key);
+};
+
+#endif 

@@ -2,6 +2,7 @@
 #include "Fine_Grained.h"
 #include "Lock_free.h"
 #include "Optimistic.h"
+#include "Optimistic_mem.h"
 #include <omp.h>
 //#include <stdint.h>
 #include "stdio.h"
@@ -48,6 +49,21 @@ int main(int argc, char *argv[]) {
 	check("testcases/main.txt", list);
 	delete list;
 
+	///////////////////// Optimistic_mem /////////////////////
+	cout << endl << endl << "Optimistic_mem:" << endl;
+	for (size_t i = 0; i < 1000; i++) {
+		list = new Optimistic_mem<int>();
+		runtest("testcases/basic.txt", list);
+		runtest("testcases/remove.txt", list);
+		delete list;
+	}
+
+	list = new Optimistic_mem<int>();
+	runtest("testcases/pre.txt", list);
+	runtest("testcases/main.txt", list);
+	check("testcases/main.txt", list);
+	delete list;
+
 	///////////////////// Optimistic /////////////////////
 	cout << endl << endl << "Optimistic:" << endl;
 
@@ -61,7 +77,6 @@ int main(int argc, char *argv[]) {
 	runtest("testcases/main.txt", list);
 	check("testcases/main.txt", list);
 	delete list;
-
 	///////////////////// Lock Free /////////////////////
 	cout << endl << endl << "Lock Free:" << endl;
 
@@ -174,10 +189,9 @@ void check(string name, SetList<int> *list) {
 			while (getline(l, segment, ' ')) {
 				auto t = stoi(segment);
 
-				if(t<0){
+				if (t < 0) {
 					invalid.insert(t);
-				}
-				else if (t > 0)
+				} else if (t > 0)
 					valid.insert(t);
 				else
 					throw new invalid_argument("0 not allowed");
@@ -195,8 +209,6 @@ void check(string name, SetList<int> *list) {
 
 	auto start = chrono::high_resolution_clock::now();
 
-
-
 	// Compare to Valid
 	bool correct = true;
 	for (const auto &i : valid) {
@@ -212,7 +224,7 @@ void check(string name, SetList<int> *list) {
 			correct = false;
 		}
 	}
-	
+
 	auto finish = chrono::high_resolution_clock::now();
 	chrono::duration<double> elapsed = finish - start;
 	auto ms = chrono::duration_cast<chrono::milliseconds>(elapsed).count();
@@ -220,5 +232,4 @@ void check(string name, SetList<int> *list) {
 		cout << green << "Test succeeded" << reset << " (" << name << ")"
 			 << " in " << ms << "ms" << endl;
 	}
-
 }
