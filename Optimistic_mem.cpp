@@ -7,8 +7,7 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
-#define HASHMASK 0xFFFFFF00000000
-#define COUTNMASK 0x00000000FFFFFF
+#define COUTNMASK 0x00000000FFFFFF //mask for counter, which shows how many threads read this item
 
 
 template <class T> Optimistic_mem<T>::Optimistic_mem() {
@@ -70,7 +69,7 @@ template <class T> bool Optimistic_mem<T>::remove(T item) {
 			int i =0;
 			while ((w.curr->hash_mem & COUTNMASK) != 0) {
 				i++;
-				if (i > 10000000) {
+				if (i > 100) {
 					cout << "wait "<<w.curr->key << endl;
 					i=0;
 				}
@@ -129,7 +128,6 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 	nodeFine_mem<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	// lock_guard<std::mutex> g(mtx);
-	int tid = omp_get_thread_num();
 
 	while (true) {
 		pred = head;
@@ -139,7 +137,7 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 		curr = pred->next;
 		int64_t hash = curr->hash_mem.load();
 
-		if (hash == 0) { // Check if hash was deledet, shouldn't happen
+		if (hash == 0) { // Check if hash was deledet
 			cerr << "Error with hash" << endl;
 			cout<<__LINE__<<endl;
 			pred->hash_mem--;
@@ -204,7 +202,6 @@ template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>>
 
 	while (n->key <= w.pred->key) {
 		
-
 		hash = n->next->hash_mem;
 		curr = n->next;
 		if (hash == 0) { // Check if hash was deledet, shouldn't happen

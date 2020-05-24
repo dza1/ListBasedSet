@@ -154,7 +154,7 @@ retry:
 				return w;
 			}
 			pred = curr;
-			curr = getPointer(curr->next.load());
+			curr = succ;
 		}
 	}
 }

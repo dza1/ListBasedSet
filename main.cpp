@@ -1,6 +1,7 @@
 #include "Coarse_Grained.h"
 #include "Fine_Grained.h"
 #include "Lock_free.h"
+#include "Lock_free_mem.h"
 #include "Optimistic.h"
 #include "Optimistic_mem.h"
 #include <omp.h>
@@ -48,20 +49,20 @@ int main(int argc, char *argv[]) {
 	// check("testcases/main.txt", list);
 	// delete list;
 
-	///////////////////// Optimistic_mem /////////////////////
-	cout << endl << endl << "Optimistic_mem:" << endl;
+	// ///////////////////// Optimistic_mem /////////////////////
+	// cout << endl << endl << "Optimistic_mem:" << endl;
 
-		list = new Optimistic_mem<int>();
-		runtest("testcases/basic.txt", list);
-		runtest("testcases/remove.txt", list);
-		delete list;
-	for(int i=0; i<100;i++){
-	list = new Optimistic_mem<int>();
-	runtest("testcases/pre.txt", list);
-	runtest("testcases/main.txt", list);
-	check("testcases/main.txt", list);
-	delete list;
-	}
+	// 	list = new Optimistic_mem<int>();
+	// 	runtest("testcases/basic.txt", list);
+	// 	runtest("testcases/remove.txt", list);
+	// 	delete list;
+	// for(int i=0; i<100;i++){
+	// list = new Optimistic_mem<int>();
+	// runtest("testcases/pre.txt", list);
+	// runtest("testcases/main.txt", list);
+	// check("testcases/main.txt", list);
+	// delete list;
+	// }
 	// ///////////////////// Optimistic /////////////////////
 	// cout << endl << endl << "Optimistic:" << endl;
 
@@ -75,20 +76,22 @@ int main(int argc, char *argv[]) {
 	// runtest("testcases/main.txt", list);
 	// check("testcases/main.txt", list);
 	// delete list;
-	// ///////////////////// Lock Free /////////////////////
-	// cout << endl << endl << "Lock Free:" << endl;
+	///////////////////// Lock Free /////////////////////
+	cout << endl << endl << "Lock Free:" << endl;
+	for (size_t i = 0; i < 200; i++) {
 
-	// list = new LockFree<int>();
-	// runtest("testcases/basic.txt", list);
-	// runtest("testcases/remove.txt", list);
-	// delete list;
+		list = new LockFree_mem<int>();
+		runtest("testcases/basic.txt", list);
+		runtest("testcases/remove.txt", list);
+		delete list;
 
-	// list = new LockFree<int>();
-	// runtest("testcases/pre.txt", list);
-	// runtest("testcases/main.txt", list);
-	// check("testcases/main.txt", list);
-	// delete list;
-	// return 0;
+		// list = new LockFree_mem<int>();
+		// runtest("testcases/pre.txt", list);
+		// runtest("testcases/main.txt", list);
+		// check("testcases/main.txt", list);
+		// delete list;
+	}
+	return 0;
 }
 
 void runtest(string name, SetList<int> *list) {

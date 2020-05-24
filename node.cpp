@@ -2,6 +2,7 @@
 #include "node.h"
 #include <iostream>
 #include <stdint.h>
+#include <omp.h>
 using namespace std;
 
 template <class T> node_virt<T>::node_virt(T item) {
@@ -27,9 +28,20 @@ template <class T> void nodeFine<T>::unlock() {
 	return;
 }
 
-template <class T> nodeFine_mem<T>::nodeFine_mem(T item):nodeFine<T>::nodeFine(item)  {
-	// this->key = (uint32_t)item;
-	// this->item = item;
+
+template <class T> nodeAtom<T>::nodeAtom(T item) {
+	this->key = key_calc(item);
+	this->item = item;
+	this->hash_mem.store( (uint64_t)this->key << 32);
+}
+
+template <class T> nodeAtom<T>::nodeAtom(T item, int32_t key) {
+	this->key = key;
+	this->item = item;
+	this->hash_mem.store( (uint64_t)this->key << 32);
+}
+
+template <class T> nodeFine_mem<T>::nodeFine_mem(T item):nodeFine<T>::nodeFine(item){
 	this->hash_mem.store( (uint64_t)this->key << 32);
 }
 
@@ -49,5 +61,6 @@ template class node_virt<int>;
 
 template class nodeFine<int>;
 //template class nodeFine<float>;
+template class nodeAtom<int>;
 template class nodeFine_mem<int>;
 // template class nodeFine<float>;
