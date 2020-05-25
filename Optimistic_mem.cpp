@@ -74,6 +74,7 @@ template <class T> bool Optimistic_mem<T>::remove(T item) {
 					i=0;
 				}
 			}
+			w.curr->lock();
 			w.curr->hash_mem=0;
 			w.curr->next=nullptr;
 			delete w.curr;
