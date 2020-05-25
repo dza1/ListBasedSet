@@ -5,10 +5,11 @@ using namespace std;
 #include "node.h"
 #include <assert.h>
 #include <omp.h>
+#include <queue>
 #include <stdint.h>
 
-#define COUTNMASK 0x00000000FFFFFF //mask for counter, which shows how many threads read this item
-
+#define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
+thread_local static queue<nodeFine_mem<int> *> deleteQueue;
 
 template <class T> Optimistic_mem<T>::Optimistic_mem() {
 	head = new nodeFine_mem<T>(0, INT32_MIN);
@@ -32,6 +33,7 @@ template <class T> bool Optimistic_mem<T>::add(T item) {
 		// Item already in the set
 		if (key == w.curr->key) {
 			unlock(w);
+			deleteNodes();
 			return false;
 		}
 
@@ -40,6 +42,7 @@ template <class T> bool Optimistic_mem<T>::add(T item) {
 		n->next = w.curr;
 		w.pred->next = n;
 		unlock(w);
+		deleteNodes();
 		return true;
 	}
 
@@ -66,19 +69,17 @@ template <class T> bool Optimistic_mem<T>::remove(T item) {
 			w.pred->next = w.curr->next;
 
 			unlock(w);
-			int i =0;
-			while ((w.curr->hash_mem & COUTNMASK) != 0) {
-				i++;
-				if (i > 100) {
-					cout << "wait "<<w.curr->key << endl;
-					i=0;
-				}
-			}
-			w.curr->lock();
-			w.curr->hash_mem=0;
-			w.curr->next=nullptr;
-			delete w.curr;
 
+			if ((w.curr->hash_mem & COUTNMASK) == 0) {
+				w.curr->lock();
+				w.curr->hash_mem = 0;
+				w.curr->next = nullptr;
+				delete w.curr;
+			} else {
+				deleteQueue.push(w.curr);
+			}
+
+			deleteNodes();
 			return true;
 		} else {
 			unlock(w);
@@ -133,28 +134,22 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 	while (true) {
 		pred = head;
 		head->hash_mem++;
-		//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 
 		curr = pred->next;
 		int64_t hash = curr->hash_mem.load();
 
 		if (hash == 0) { // Check if hash was deledet
 			cerr << "Error with hash" << endl;
-			cout<<__LINE__<<endl;
+			cout << __LINE__ << endl;
 			pred->hash_mem--;
-			//printf("%i: Error %i rem hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 			continue;
 		}
 		if (atomic_compare_exchange_strong(&pred->next->hash_mem, &hash, hash + 1) == false) {
 			pred->hash_mem--;
-			//cout<<__LINE__<<endl;
-			//printf("%i: Error %i rem hash: %i Line: %i, addr: %p  \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
 			continue;
 		}
-		//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p\n", tid, curr->key,(int)hash+1,__LINE__,(void*)curr);
-		////printf("%i: Ittem %i add hash: %i Line: %i \n", tid, curr->key,hash+1);
 		while (curr->key < key) {
-			
+
 			nodeFine_mem<T> *old = pred;
 
 			pred = curr;
@@ -163,31 +158,36 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 			if (hash == 0) { // Check if hash was deleded, shouldn't happen
 				cerr << "Error with hash" << endl;
 				cout << __LINE__ << endl;
-				curr=pred;
-				pred=old;
+				curr = pred;
+				pred = old;
 				continue;
 			}
-			if (atomic_compare_exchange_strong(&curr->hash_mem, &hash,hash + 1) == false) {
-				//cout<<tid<<":"<<__LINE__<<endl;
-				curr=pred;
-				pred=old;
+			if (atomic_compare_exchange_strong(&curr->hash_mem, &hash, hash + 1) == false) {
+				// cout<<tid<<":"<<__LINE__<<endl;
+				curr = pred;
+				pred = old;
 				continue;
 			}
 			assert(curr != NULL);
-			//printf("%i: Ittem %i add hash: %i Line: %i, addr: %p  \n", tid, (int)curr->key,(int)hash+1,__LINE__,(void*)curr);
+			// printf("%i: Ittem %i add hash: %i Line: %i, addr: %p  \n", tid,
+			// (int)curr->key,(int)hash+1,__LINE__,(void*)curr);
 			old->hash_mem--;
-			//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p\n", tid, old->key,(int)old->hash_mem,__LINE__,(void*)old);
+			// printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p\n", tid,
+			// old->key,(int)old->hash_mem,__LINE__,(void*)old);
 		}
 
 		Window_at_t<nodeFine_mem<T>> w{pred, curr};
 		lock(w);
 		pred->hash_mem--;
 		curr->hash_mem--;
-		//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p \n", tid, pred->key,(int)pred->hash_mem,__LINE__,(void*)pred);
-		//printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p \n", tid, curr->key,(int)curr->hash_mem,__LINE__,(void*)curr);
+		// printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p \n", tid,
+		// pred->key,(int)pred->hash_mem,__LINE__,(void*)pred); printf("%i: Ittem %i rem hash: %i Line: %i, addr: %p
+		// \n", tid, curr->key,(int)curr->hash_mem,__LINE__,(void*)curr);
 		if (validate(w) == true) {
+			deleteNodes();
 			return w;
 		} else { // not reachable
+			deleteNodes();
 			unlock(w);
 		}
 	}
@@ -198,11 +198,10 @@ template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>>
 	n->hash_mem++;
 	int64_t hash;
 
-	
 	nodeFine_mem<T> *curr;
 
 	while (n->key <= w.pred->key) {
-		
+
 		hash = n->next->hash_mem;
 		curr = n->next;
 		if (hash == 0) { // Check if hash was deledet, shouldn't happen
@@ -230,7 +229,7 @@ template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>>
 		////printf("%i: Ittem %i rem hash: %i Line: %i \n", tid, curr->key, ((int)n->hash_mem));
 		n = curr;
 	}
-	cout<<"not found"<<endl;
+	//cout << "not found" << endl;
 	curr->hash_mem--;
 	return false;
 }
@@ -243,6 +242,20 @@ template <class T> void Optimistic_mem<T>::lock(Window_at_t<nodeFine_mem<T>> w) 
 template <class T> void Optimistic_mem<T>::unlock(Window_at_t<nodeFine_mem<T>> w) {
 	w.pred->unlock();
 	w.curr->unlock();
+}
+
+template <class T> void Optimistic_mem<T>::deleteNodes() {
+	size_t size = deleteQueue.size();
+	for (size_t i = 0; i < size; i++) {
+		nodeFine_mem<T> *curr = deleteQueue.front();
+		deleteQueue.pop();
+		if ((curr->hash_mem & COUTNMASK) == 0) {
+			delete (curr);
+		} else {
+			deleteQueue.push(curr); // Put again on the end, if it was not possible to delete
+		}
+	}
+	return;
 }
 
 template class Optimistic_mem<int>;

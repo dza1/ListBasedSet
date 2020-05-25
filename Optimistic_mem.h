@@ -7,8 +7,8 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
-#include "setlist.h"
 #include "Window.h"
+#include "setlist.h"
 
 template <typename T> class Optimistic_mem : public SetList<T> { // The class
   private:
@@ -18,6 +18,7 @@ template <typename T> class Optimistic_mem : public SetList<T> { // The class
 	void lock(Window_at_t<nodeFine_mem<T>> w);
 	void unlock(Window_at_t<nodeFine_mem<T>> w);
 	bool validate(Window_at_t<nodeFine_mem<T>> w);
+	void deleteNodes();
 
   public:
 	nodeFine_mem<T> *head;

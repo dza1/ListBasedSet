@@ -10,7 +10,7 @@ using namespace std;
 
 #define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
 
-thread_local queue<nodeAtom<int> *> deleteQueue;
+thread_local static queue<nodeAtom<int> *> deleteQueue;
 
 template <class T> LockFree_mem<T>::LockFree_mem() {
 	nodeAtom<T> *tmp;
