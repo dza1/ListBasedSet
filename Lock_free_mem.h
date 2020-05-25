@@ -27,7 +27,8 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);
 	void resetFlag(atomic<nodeAtom<T>*>* pointer);
-	bool getFlag(nodeAtom<int>* pointer);
+	bool getFlag(nodeAtom<T>* pointer);
+	void deleteNodes();
 
   public:
 	nodeAtom<T>* head;

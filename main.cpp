@@ -85,12 +85,12 @@ int main(int argc, char *argv[]) {
 		runtest("testcases/remove.txt", list);
 		delete list;
 
-		// list = new LockFree_mem<int>();
-		// runtest("testcases/pre.txt", list);
-		// runtest("testcases/main.txt", list);
-		// check("testcases/main.txt", list);
-		// delete list;
 	}
+		list = new LockFree_mem<int>();
+		runtest("testcases/pre.txt", list);
+		runtest("testcases/main.txt", list);
+		check("testcases/main.txt", list);
+		delete list;
 	return 0;
 }
 

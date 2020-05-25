@@ -23,7 +23,7 @@ template <class T> LockFree<T>::LockFree() {
 template <class T> LockFree<T>::~LockFree() {
 	while (head != NULL) {
 		nodeAtom<T>* oldHead = head;
-		head=head->next;
+		head = getPointer(head->next);
 		delete oldHead;
 	} 
 }

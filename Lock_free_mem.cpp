@@ -5,9 +5,12 @@ using namespace std;
 #include "node.h"
 #include <assert.h>
 #include <omp.h>
+#include <queue>
 #include <stdint.h>
 
 #define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
+
+thread_local queue<nodeAtom<int> *> deleteQueue;
 
 template <class T> LockFree_mem<T>::LockFree_mem() {
 	nodeAtom<T> *tmp;
@@ -19,7 +22,7 @@ template <class T> LockFree_mem<T>::LockFree_mem() {
 template <class T> LockFree_mem<T>::~LockFree_mem() {
 	while (head != NULL) {
 		nodeAtom<T> *oldHead = head;
-		head = head->next;
+		head = getPointer(head->next);
 		delete oldHead;
 	}
 }
@@ -35,6 +38,7 @@ template <class T> bool LockFree_mem<T>::add(T item) {
 
 			// Item already in the set
 			if (curr->key == key) {
+				deleteNodes();
 				return false;
 			}
 
@@ -45,6 +49,7 @@ template <class T> bool LockFree_mem<T>::add(T item) {
 			resetFlag(&n->next);
 
 			if (atomic_compare_exchange_weak(&pred->next, &curr, n) == true) {
+				deleteNodes();
 				return true;
 			}
 		}
@@ -86,7 +91,13 @@ template <class T> bool LockFree_mem<T>::remove(T item) {
 				}
 
 				// try to unlink
-				atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ);
+				if (atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ) == true) {
+					if ((w.curr->hash_mem & COUTNMASK) == 0) {
+						delete (w.curr);
+					} else {
+						deleteQueue.push(w.curr);
+					}
+				}
 
 				return true;
 			} else {
@@ -200,19 +211,12 @@ retry:
 					goto retry;
 				}
 				curr->hash_mem--;
-				int i = 0;
-				int j = 0;
-				while ((curr->hash_mem & COUTNMASK) != 0) {
-					i++;
-					if (i > 100) {
-						if (j > 30)
-							throw "wait to much often";
-						cout << tid << " wait " << curr->key << " hash: " << (curr->hash_mem & COUTNMASK) << endl;
-						i = 0;
-						j++;
-					}
+
+				if ((curr->hash_mem & COUTNMASK) == 0) {
+					delete (curr);
+				} else {
+					deleteQueue.push(curr);
 				}
-				delete (curr);
 				curr = succ;
 				while (true) {
 					hash = getPointer(succ->next.load())->hash_mem.load();
@@ -268,9 +272,29 @@ template <class T> void LockFree_mem<T>::resetFlag(atomic<nodeAtom<T> *> *pointe
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
 
-template <class T> bool LockFree_mem<T>::getFlag(nodeAtom<int> *pointer) {
+template <class T> bool LockFree_mem<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
 
+template <class T> void LockFree_mem<T>::deleteNodes() {
+	int tid = omp_get_thread_num();
+	while (deleteQueue.empty() == false) {
+		nodeAtom<T> *curr = deleteQueue.front();
+		deleteQueue.pop();
+		int i = 0;
+		int j = 0;
+		while ((curr->hash_mem & COUTNMASK) != 0) {
+			i++;
+			if (i > 100) {
+				if (j > 30)
+					// throw "wait to much often";
+					cout << tid << " wait " << curr->key << " hash: " << (curr->hash_mem & COUTNMASK) << endl;
+				i = 0;
+				j++;
+			}
+		}
+	}
+	return;
+}
 template class LockFree_mem<int>;
 // template class LockFree<float>;
