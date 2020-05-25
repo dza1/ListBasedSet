@@ -27,7 +27,7 @@ template <typename T> class LockFree : public SetList<T> { // The class
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);
 	void resetFlag(atomic<nodeAtom<T>*>* pointer);
-	bool getFlag(nodeAtom<int>* pointer);
+	bool getFlag(nodeAtom<T>* pointer);
 
   public:
 	nodeAtom<T>* head;

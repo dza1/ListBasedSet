@@ -181,7 +181,7 @@ template <class T> void LockFree<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
 
-template <class T> bool LockFree<T>::getFlag(nodeAtom<int> *pointer) {
+template <class T> bool LockFree<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
 

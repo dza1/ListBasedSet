@@ -293,6 +293,7 @@ template <class T> void LockFree_mem<T>::deleteNodes() {
 				j++;
 			}
 		}
+		delete(curr);
 	}
 	return;
 }
