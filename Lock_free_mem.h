@@ -37,5 +37,6 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
 	bool add(T item);
 	bool remove(T item);
 	bool contains(T item);
+	void empty_garb();
 };
 #endif

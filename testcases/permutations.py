@@ -4,7 +4,7 @@ pre = open("pre.txt","w")
 main = open("main.txt","w")
 post = open("post.txt","w")
 
-rows, cols = (500, 100) 
+rows, cols = (50, 50) 
 sw_rounds =cols*rows
 
 arr = [[0 for i in range(cols)] for j in range(rows)] 
