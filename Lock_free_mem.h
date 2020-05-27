@@ -34,9 +34,9 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
 	nodeAtom<T>* head;
 	LockFree_mem();
 	~LockFree_mem();
-	bool add(T item);
-	bool remove(T item);
-	bool contains(T item);
+	bool add(T item,int *benchMark);
+	bool remove(T item,int *benchMark);
+	bool contains(T item,int *benchMark);
 	void empty_garb();
 };
 #endif

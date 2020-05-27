@@ -20,7 +20,7 @@ template <class T> FineList<T>::~FineList() {
 	} 
 }
 
-template <class T> bool FineList<T>::add(T item) {
+template <class T> bool FineList<T>::add(T item,int *benchMark) {
 	nodeFine<T> *pred=NULL, *curr=NULL;
 	try {
 		int32_t key = key_calc<T>(item);
@@ -69,7 +69,7 @@ template <class T> bool FineList<T>::add(T item) {
 	}
 }
 
-template <class T> bool FineList<T>::remove(T item) {
+template <class T> bool FineList<T>::remove(T item, int *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	head->lock();
@@ -112,7 +112,7 @@ template <class T> bool FineList<T>::remove(T item) {
 	}
 }
 
-template <class T> bool FineList<T>::contains(T item) {
+template <class T> bool FineList<T>::contains(T item, int *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	head->lock();

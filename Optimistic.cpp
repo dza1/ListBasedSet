@@ -14,30 +14,36 @@ template <class T> Optimistic<T>::Optimistic() {
 
 template <class T> Optimistic<T>::~Optimistic() {
 	while (head != NULL) {
-		nodeFine<T>* oldHead = head;
-		head=head->next;
+		nodeFine<T> *oldHead = head;
+		head = head->next;
 		delete oldHead;
-	} 
+	}
 }
 
-template <class T> bool Optimistic<T>::add(T item) {
+template <class T> bool Optimistic<T>::add(T item,int *benchMark) {
 	Window_t<T> w;
 	try {
-			w = find(item);
-			int32_t key = key_calc<T>(item);
+		w = find(item);
+		int32_t key = key_calc<T>(item);
 
-			// Item already in the set
-			if (key == w.curr->key) {
-				unlock(w);
-				return false;
-			}
-
-			// Add item to the set
-			nodeFine<T> *n = new nodeFine<T>(item);
-			n->next = w.curr;
-			w.pred->next = n;
+		// Item already in the set
+		if (key == w.curr->key) {
 			unlock(w);
-			return true;
+			return false;
+		}
+
+		// Add item to the set
+		nodeFine<T> *n = new nodeFine<T>(item);
+		if (w.pred->key >= n->key) {
+			printf("Error");
+		}
+		n->next = w.curr;
+		w.pred->next = n;
+
+		assert(w.pred->key < n->key);
+		assert(n->key < w.curr->key);
+		unlock(w);
+		return true;
 	}
 
 	// Exception handling
@@ -53,7 +59,7 @@ template <class T> bool Optimistic<T>::add(T item) {
 	}
 }
 
-template <class T> bool Optimistic<T>::remove(T item) {
+template <class T> bool Optimistic<T>::remove(T item, int *benchMark) {
 	Window_t<T> w;
 	try {
 		w = find(item);
@@ -62,7 +68,7 @@ template <class T> bool Optimistic<T>::remove(T item) {
 		if (key == w.curr->key) {
 			w.pred->next = w.curr->next;
 			unlock(w);
-			delete w.curr;
+			// delete w.curr;
 			return true;
 		} else {
 			unlock(w);
@@ -82,7 +88,7 @@ template <class T> bool Optimistic<T>::remove(T item) {
 	}
 }
 
-template <class T> bool Optimistic<T>::contains(T item) {
+template <class T> bool Optimistic<T>::contains(T item, int *benchMark) {
 	Window_t<T> w;
 	try {
 		w = find(item);
@@ -111,11 +117,11 @@ template <class T> bool Optimistic<T>::contains(T item) {
 
 template <class T> Window_t<T> Optimistic<T>::find(T item) {
 	nodeFine<T> *pred, *curr;
-	int32_t key = key_calc<T>(item);
+	int32_t key = key_calc(item);
 	// lock_guard<std::mutex> g(mtx);
 	while (true) {
 		pred = head;
-		curr = pred->next;
+		curr = head->next;
 
 		while (curr->key < key) {
 			assert(curr->next != NULL);
@@ -125,12 +131,13 @@ template <class T> Window_t<T> Optimistic<T>::find(T item) {
 
 		Window_t<T> w{pred, curr};
 		lock(w);
+		assert(w.pred->key <= key);
+		assert(w.curr->key >= key);
 		if (validate(w) == true) {
 			return w;
 		} else { // not reachable
 			unlock(w);
 		}
-
 	}
 }
 
@@ -139,14 +146,12 @@ template <class T> bool Optimistic<T>::validate(Window_t<T> w) {
 	while (n->key <= w.pred->key) {
 		assert(n->next != NULL);
 		if (n == w.pred) {
-			if (n->next != w.curr) {
-				// printf("%i to %i not Reachable\n", w.pred->key, w.curr->key);
-			}
+	
 			return n->next == w.curr;
 		}
+
 		n = n->next;
 	}
-
 	return false;
 }
 

@@ -19,8 +19,8 @@ template <typename T> class CoarseList : public SetList<T> { // The class
 	CoarseList();
 	~CoarseList();
 
-	bool add(T item);
-	bool remove(T item);
-	bool contains(T item);
+	bool add(T item,int *benchMark);
+	bool remove(T item,int *benchMark);
+	bool contains(T item,int *benchMark);
 };
 #endif

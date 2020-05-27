@@ -5,12 +5,11 @@ using namespace std;
 #include "node.h"
 #include <assert.h>
 #include <omp.h>
-#include <queue>
 #include <stdint.h>
 
 #define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
 
-thread_local static queue<nodeAtom<int> *> deleteQueue;
+thread_local queue<nodeAtom<int> *> deleteQueue;
 
 template <class T> LockFree_mem<T>::LockFree_mem() {
 	nodeAtom<T> *tmp;
@@ -22,7 +21,7 @@ template <class T> LockFree_mem<T>::LockFree_mem() {
 template <class T> LockFree_mem<T>::~LockFree_mem() {
 	while (head != NULL) {
 		nodeAtom<T> *oldHead = head;
-		head = getPointer(head->next);
+		head = head->next;
 		delete oldHead;
 	}
 }
@@ -38,7 +37,7 @@ template <class T> bool LockFree_mem<T>::add(T item,int *benchMark) {
 
 			// Item already in the set
 			if (curr->key == key) {
-				deleteNodes();
+				//deleteNodes();
 				return false;
 			}
 
@@ -48,8 +47,8 @@ template <class T> bool LockFree_mem<T>::add(T item,int *benchMark) {
 			// n->next.store(resetFlag(&n->next.load()));
 			resetFlag(&n->next);
 
-			if (atomic_compare_exchange_weak(&pred->next, &curr, n) == true) {
-				deleteNodes();
+			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == true) {
+				//deleteNodes();
 				return true;
 			}
 		}
@@ -83,26 +82,19 @@ template <class T> bool LockFree_mem<T>::remove(T item, int *benchMark) {
 
 				setFlag(&markedsucc);
 				resetFlag(&succ);
-				// delete w.curr;
 
 				// mark as deleted
-				if (atomic_compare_exchange_weak(&w.curr->next, &succ, markedsucc) == false) {
+				if (atomic_compare_exchange_strong(&w.curr->next, &succ, markedsucc) == false) {
 					continue;
 				}
 
 				// try to unlink
-				if (atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ) == true) {
-					if ((w.curr->hash_mem & COUTNMASK) == 0) {
-						delete (w.curr);
-					} else {
-						deleteQueue.push(w.curr);
-					}
-				}
+				atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ);
 
-deleteNodes();
+				//deleteNodes();
 				return true;
 			} else {
-deleteNodes();
+				//deleteNodes();
 				return false;
 			}
 		}
@@ -135,15 +127,15 @@ template <class T> bool LockFree_mem<T>::contains(T item, int *benchMark) {
 			cout << __LINE__ << endl;
 			continue;
 		}
-		if (atomic_compare_exchange_weak(&curr->hash_mem, &hash, hash + 1) == false) {
+		if (atomic_compare_exchange_strong(&curr->hash_mem, &hash, hash + 1) == false) {
 			continue;
 		}
 		n->hash_mem--;
 		n = curr;
 	}
-	bool result = n->key == key && !getFlag(n->next.load());
+	bool benchMark = n->key == key && !getFlag(n->next.load());
 	n->hash_mem--;
-	return result;
+	return benchMark;
 }
 
 template <class T> Window_at_t<nodeAtom<T>> LockFree_mem<T>::find(T item) {
@@ -161,41 +153,27 @@ retry:
 			cerr << "Error with hash" << endl;
 			cout << __LINE__ << endl;
 			pred->hash_mem--;
-			// printf("%i: Error  Line: %i  \n", tid, __LINE__);
 			continue;
 		}
 		// increace hash for one
 		if (atomic_compare_exchange_strong(&(getPointer(pred->next.load())->hash_mem), &hash, hash + 1) == false) {
 			pred->hash_mem--;
-			// printf("%i: Error  Line: %i  \n", tid, __LINE__);
 			continue;
 		}
 
 		while (true) {
 
 			assert(pred->next != NULL);
-			nodeAtom<T> *succ;
-			try {
-				hash = getPointer(curr->next.load())->hash_mem.load();
-				succ= getPointer(curr->next.load());
-				// printf("%i: normal keypred: %i key curr %i key next: %i  Line: %i \n", tid,pred->key,curr->key,succ->key,
-				// __LINE__);
-				// cout << "Atomic " << curr->next << " " << curr->next.load() << endl;
+			hash = getPointer(curr->next.load())->hash_mem.load();
+			nodeAtom<T> *succ = getPointer(curr->next.load());
 
-				if (hash == 0) { // Check if hash was deleded
-					cerr << "Error with hash" << endl;
-					cout << __LINE__ << endl;
-					// printf("%i: Error  Line: %i  \n", tid, __LINE__);
-					continue;
-				}
-				if (atomic_compare_exchange_strong(&succ->hash_mem, &hash, hash + 1) == false) {
-					// printf("%i: Error  Line: %i  \n", tid, __LINE__);
-					continue;
+			if (hash == 0) { // Check if hash was deleded
+				cerr << "Error with hash" << endl;
+				cout << __LINE__ << endl;
+				continue;
 			}
-			}
-			catch(...){
-				cerr<<"Exeption"<<endl;
-				goto retry;
+			if (atomic_compare_exchange_strong(&succ->hash_mem, &hash, hash + 1) == false) {
+				continue;
 			}
 
 			// link out marked items
@@ -205,31 +183,28 @@ retry:
 				resetFlag(&succ);
 
 				// link node out
-				nodeAtom<T> *old = curr; // atomic_compare_exchange overwrite  curr, no idea why
-				// printf("curr 1: %p next: %p\n", curr, &curr);
-				if (atomic_compare_exchange_strong(&pred->next, &curr, succ) == false) {
-					// printf("curr 2: %p next: %p\n", curr, &curr);
-					// printf("%i: Error keypred: %i key curr %i key next: %i  Line: %i \n", tid, pred->key,
-					// curr->key,succ->key, __LINE__);
-					// printf("%i: Error pred: %p curr %p  next: %p  Line:
-					// %i \n",tid,(void*)pred,(void*)curr,(void*)succ, __LINE__);
-					pred->hash_mem--;
-					old->hash_mem--;
-					succ->hash_mem--;
-					goto retry;
-				}
+				printf("%i: Error  Line: %i  \n", tid, __LINE__);
+				nodeAtom<T> *old = curr; // atomic_compare_exchange overwrite  curr if it return false
+				// if (atomic_compare_exchange_strong(&pred->next, &curr, succ) == false) {
+				// 	pred->hash_mem--;
+				// 	old->hash_mem--;
+				// 	succ->hash_mem--;
+				// 	printf("%i: Error  Line: %i  \n", tid, __LINE__);
+				// 	goto retry;
+				// }
+				printf("%i: Normal  Line: %i key: %i \n", tid, __LINE__,getPointer(pred->next)->key);
 				curr->hash_mem--;
+				// if ((curr->hash_mem & COUTNMASK) == 0) {
+				// 	delete (curr);
+				// } else {
+				// 	deleteQueue.push(curr);
+				// }
 
-				deleteQueue.push(curr);
-				
 				curr = succ;
 				while (true) {
 					hash = getPointer(succ->next.load())->hash_mem.load();
 					succ = getPointer(succ->next.load());
 					if (hash == 0) { // Check if hash was deleded
-						printf("%i: Error  Line: %i  \n", tid, __LINE__);
-						cerr << "Error with hash" << endl;
-						cout << __LINE__ << endl;
 						succ = curr;
 						continue;
 					}
@@ -272,7 +247,7 @@ template <class T> void LockFree_mem<T>::resetFlag(nodeAtom<T> **pointer) {
 	*pointer = (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
-template <class T> void LockFree_mem<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
+template <class T> void LockFree_mem<T>::resetFlag(atomic<nodeAtom<int> *> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer->load();
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
@@ -280,32 +255,26 @@ template <class T> void LockFree_mem<T>::resetFlag(atomic<nodeAtom<T> *> *pointe
 template <class T> bool LockFree_mem<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
-
-// template <class T> void LockFree_mem<T>::deleteNodes() {
-// 	size_t size = deleteQueue.size();
-// 	for (size_t i = 0; i < size; i++) {
-// 		nodeAtom<T> *curr = deleteQueue.front();
-// 		deleteQueue.pop();
-// 		if ((curr->hash_mem & COUTNMASK) == 0) {
-// 			curr->hash_mem=0;
-// 			delete (curr);
-// 		} else {
-// 			deleteQueue.push(curr); // Put again on the end, if it was not possible to delete
-// 		}
-// 	}
-// 	return;
-// }
-
 template <class T> void LockFree_mem<T>::deleteNodes() {
+	int tid = omp_get_thread_num();
 	while (deleteQueue.empty() == false) {
 		nodeAtom<T> *curr = deleteQueue.front();
 		deleteQueue.pop();
-
+		int i = 0;
+		int j = 0;
 		while ((curr->hash_mem & COUTNMASK) != 0) {
+			i++;
+			if (i > 100) {
+				if (j > 30)
+					//throw "wait to much often";
+				cout << tid << " wait " << curr->key << " hash: " << (curr->hash_mem & COUTNMASK) << endl;
+				i = 0;
+				j++;
+			}
 		}
-		delete(curr);
 	}
 	return;
 }
+
 template class LockFree_mem<int>;
 // template class LockFree<float>;

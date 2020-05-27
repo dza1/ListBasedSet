@@ -28,12 +28,12 @@ template <class T> LockFree<T>::~LockFree() {
 	} 
 }
 
-template <class T> bool LockFree<T>::add(T item) {
+template <class T> bool LockFree<T>::add(T item,int *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
 		while (true) {
-			w = find(item);
+			w = find(item,benchMark);
 			nodeAtom<T> *pred = w.pred;
 			nodeAtom<T> *curr = w.curr;
 
@@ -68,12 +68,12 @@ template <class T> bool LockFree<T>::add(T item) {
 	}
 }
 
-template <class T> bool LockFree<T>::remove(T item) {
+template <class T> bool LockFree<T>::remove(T item, int *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	try {
 		while (true) {
 
-			w = find(item);
+			w = find(item,benchMark);
 			int32_t key = key_calc<T>(item);
 
 			if (key == w.curr->key) {
@@ -112,7 +112,7 @@ template <class T> bool LockFree<T>::remove(T item) {
 	}
 }
 
-template <class T> bool LockFree<T>::contains(T item) {
+template <class T> bool LockFree<T>::contains(T item, int *benchMark) {
 	nodeAtom<T> *n = head;
 
 	int32_t key = key_calc<T>(item);
@@ -124,7 +124,7 @@ template <class T> bool LockFree<T>::contains(T item) {
 
 
 
-template <class T> Window_at_t<nodeAtom<T>> LockFree<T>::find(T item) {
+template <class T> Window_at_t<nodeAtom<T>> LockFree<T>::find(T item, int *benchMark) {
 
 	nodeAtom<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
@@ -144,6 +144,8 @@ retry:
 				resetFlag(&succ);
 
 				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
+					*benchMark=*benchMark+1;
+					//cout<<"Error"<<endl;
 					goto retry;
 				}
 				curr = succ;

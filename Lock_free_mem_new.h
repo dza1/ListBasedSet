@@ -1,5 +1,5 @@
-#ifndef LOCKFREE_H__
-#define LOCKFREE_H__
+#ifndef LOCKFREE_MEM_H__
+#define LOCKFREE_MEM_H__
 #include <iostream>
 using namespace std;
 #include "node.h"
@@ -9,6 +9,7 @@ using namespace std;
 
 #include "setlist.h"
 #include "Window.h"
+#include <queue>
 
 #include <memory>
 
@@ -18,21 +19,22 @@ using namespace std;
 
 
 
-template <typename T> class LockFree : public SetList<T> { // The class
+template <typename T> class LockFree_mem : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_at_t<nodeAtom<T>> find(T item, int *benchMark);
+	Window_at_t<nodeAtom<T>> find(T item);
 	nodeAtom<T>* getPointer(nodeAtom<T>* pointer);
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);
-	void resetFlag(atomic<nodeAtom<T>*>* pointer);
+	void resetFlag(atomic<nodeAtom<int>*>* pointer);
 	bool getFlag(nodeAtom<T>* pointer);
+	void deleteNodes();
 
   public:
 	nodeAtom<T>* head;
-	LockFree();
-	~LockFree();
+	LockFree_mem();
+	~LockFree_mem();
 	bool add(T item,int *benchMark);
 	bool remove(T item,int *benchMark);
 	bool contains(T item,int *benchMark);

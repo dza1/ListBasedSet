@@ -21,7 +21,7 @@ template <class T> CoarseList<T>::~CoarseList() {
 	} 
 }
 
-template <class T> bool CoarseList<T>::add(T item) {
+template <class T> bool CoarseList<T>::add(T item,int *benchMark) {
 	try {
 		node<T> *pred, *curr;
 		// lock_guard<std::mutex> g(mtx);
@@ -64,7 +64,7 @@ template <class T> bool CoarseList<T>::add(T item) {
 	}
 }
 
-template <class T> bool CoarseList<T>::remove(T item) {
+template <class T> bool CoarseList<T>::remove(T item, int *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	mtx.lock();
@@ -100,7 +100,7 @@ template <class T> bool CoarseList<T>::remove(T item) {
 	}
 }
 
-template <class T> bool CoarseList<T>::contains(T item) {
+template <class T> bool CoarseList<T>::contains(T item, int *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	mtx.lock();

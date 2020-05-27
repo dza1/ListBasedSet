@@ -18,8 +18,8 @@ template <typename T> class FineList : public SetList<T> { // The class
 	nodeFine<T> *head;
 	FineList();
 	~FineList();
-	bool add(T item);
-	bool remove(T item);
-	bool contains(T item);
+	bool add(T item,int *benchMark);
+	bool remove(T item,int *benchMark);
+	bool contains(T item,int *benchMark);
 };
 #endif

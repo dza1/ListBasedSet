@@ -24,7 +24,7 @@ template <class T> Optimistic_mem<T>::~Optimistic_mem() {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::add(T item) {
+template <class T> bool Optimistic_mem<T>::add(T item,int *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
@@ -59,7 +59,7 @@ template <class T> bool Optimistic_mem<T>::add(T item) {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::remove(T item) {
+template <class T> bool Optimistic_mem<T>::remove(T item, int *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
@@ -99,7 +99,7 @@ template <class T> bool Optimistic_mem<T>::remove(T item) {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::contains(T item) {
+template <class T> bool Optimistic_mem<T>::contains(T item, int *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);

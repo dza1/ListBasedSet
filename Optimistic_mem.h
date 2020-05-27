@@ -24,8 +24,8 @@ template <typename T> class Optimistic_mem : public SetList<T> { // The class
 	nodeFine_mem<T> *head;
 	Optimistic_mem();
 	~Optimistic_mem();
-	bool add(T item);
-	bool remove(T item);
-	bool contains(T item);
+	bool add(T item,int *benchMark);
+	bool remove(T item,int *benchMark);
+	bool contains(T item,int *benchMark);
 };
 #endif

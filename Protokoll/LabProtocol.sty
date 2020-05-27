@@ -1,0 +1,123 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% packages
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{placeins}
+\usepackage{longtable}
+\usepackage{setspace}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% some size definitions and counter settings
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\parskip        0mm
+\oddsidemargin  0in
+\evensidemargin 0in
+\textwidth      6in
+\topmargin      0in
+\marginparwidth 30pt
+\textheight     9.2in
+\headheight     .1in
+\headsep        .1mm
+
+
+
+
+
+\titlespacing*{\section}
+{0pt}{6.5ex plus 1ex minus .2ex}{1.3ex plus .2ex}
+\titlespacing*{\subsection}
+{0pt}{6.5ex plus 1ex minus .2ex}{1.3ex plus .2ex}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% define variables used on titlepage
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\setcounter{footnote}{0} 
+
+% initialize variables
+\newcommand{\varHeadline}{Advanced Multiprocessor Programming}
+\newcommand{\varSubtitle}{List-based Set}
+\newcommand{\varExercise}{}
+\newcommand{\varAuthors}{}
+
+\newcommand{\headline}[1]{\renewcommand{\varHeadline}{#1}}
+\newcommand{\subtitle}[1]{\renewcommand{\varSubtitle}{#1}}
+\newcommand{\exercise}[1]{\renewcommand{\varExercise}{#1}}
+\newcommand{\authors}[1]{\renewcommand{\varAuthors}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% titlepage
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\def\maketitle{
+\begin{titlepage}
+
+% enlarge page
+\setlength{\topmargin}{0pt}
+\setlength{\headheight}{0pt}
+\setlength{\headsep}{0pt}
+\setlength{\footskip}{0pt}
+
+\let\footnotesize\small \let\footnoterule\relax \setcounter{page}{1}
+
+\null
+\vfill
+\large
+\vskip -4 cm 
+
+\begin{center}
+% heading
+{\LARGE\bf \varHeadline \par} \vskip 2cm
+
+\vskip 1cm
+
+% title
+{\Huge\bf \varSubtitle \par} 
+\vskip 1cm
+{\Huge\bf \varExercise \par} 
+
+%{\Large \bf \@aufgabe \par}
+\vskip 4cm
+
+\begin{flushright}
+% authors
+\varAuthors
+
+\vskip 1cm
+Vienna, \today{}
+\end{flushright}
+\end{center} \par
+\vskip 1.5cm 
+
+\end{titlepage}
+
+\setcounter{footnote}{0} 
+
+\let\thanks\relax
+} % \def\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+

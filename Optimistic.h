@@ -23,8 +23,8 @@ template <typename T> class Optimistic : public SetList<T> { // The class
 	nodeFine<T> *head;
 	Optimistic();
 	~Optimistic();
-	bool add(T item);
-	bool remove(T item);
-	bool contains(T item);
+	bool add(T item,int *benchMark);
+	bool remove(T item,int *benchMark);
+	bool contains(T item,int *benchMark);
 };
 #endif
