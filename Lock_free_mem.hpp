@@ -2,14 +2,13 @@
 #define LOCKFREE_MEM_H__
 #include <iostream>
 using namespace std;
-#include "node.h"
+#include "node.hpp"
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
 
-#include "setlist.h"
-#include "Window.h"
-#include <queue>
+#include "setlist.hpp"
+#include "Window.hpp"
 
 #include <memory>
 
@@ -27,7 +26,7 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
 	nodeAtom<T>* getPointer(nodeAtom<T>* pointer);
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);
-	void resetFlag(atomic<nodeAtom<int>*>* pointer);
+	void resetFlag(atomic<nodeAtom<T>*>* pointer);
 	bool getFlag(nodeAtom<T>* pointer);
 	void deleteNodes();
 
@@ -35,8 +34,9 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
 	nodeAtom<T>* head;
 	LockFree_mem();
 	~LockFree_mem();
-	bool add(T item,int *benchMark);
-	bool remove(T item,int *benchMark);
-	bool contains(T item,int *benchMark);
+	bool add(T item,sub_benchMark_t *benchMark);
+	bool remove(T item,sub_benchMark_t *benchMark);
+	bool contains(T item,sub_benchMark_t *benchMark);
+	void empty_garb();
 };
 #endif

@@ -27,7 +27,7 @@ def create_testfiles():
 
     for i in range(rows): # Threads
         for j in range((int)(cols/2)): # Actions
-            pre.write(str(arr[i][j]) + " ")
+            pre.write(str(arr[i][j]) + ",")
         pre.write("\n")
 
 
@@ -36,7 +36,7 @@ def create_testfiles():
     ######Post file, negate the 2nd part of the array afterwards   
     for i in range(rows): # Threads
         for j in range((int)(cols/2),cols): # Actions
-            # post.write(str(arr[i][j]) + " ")
+            # post.write(str(arr[i][j]) + ",")
             arr[i][j]=-arr[i][j]
         # post.write("\n")
 
@@ -53,7 +53,7 @@ def create_testfiles():
 
     for i in range(rows): # Threads
         for j in range((int)(cols)): # Actions
-            main.write(str(-arr[i][j]) + " ")
+            main.write(str(-arr[i][j]) + ",")
         main.write("\n")
 
 for i in range(FILE_AMOUNT):
@@ -63,5 +63,5 @@ for i in range(FILE_AMOUNT):
     main = open(main_file,"w")
     # post = open("post.txt","w")
 
-    rows, cols = (100, 100*(i+1)) 
+    rows, cols = (100*(i+1), 100*(i+1)) 
     create_testfiles()

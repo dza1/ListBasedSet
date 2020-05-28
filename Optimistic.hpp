@@ -2,13 +2,13 @@
 #define OPTIMISTIC_H__
 #include <iostream>
 using namespace std;
-#include "node.h"
+#include "node.hpp"
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
 
-#include "setlist.h"
-#include "Window.h"
+#include "setlist.hpp"
+#include "Window.hpp"
 
 template <typename T> class Optimistic : public SetList<T> { // The class
   private:
@@ -23,8 +23,8 @@ template <typename T> class Optimistic : public SetList<T> { // The class
 	nodeFine<T> *head;
 	Optimistic();
 	~Optimistic();
-	bool add(T item,int *benchMark);
-	bool remove(T item,int *benchMark);
-	bool contains(T item,int *benchMark);
+	bool add(T item,sub_benchMark_t *benchMark);
+	bool remove(T item,sub_benchMark_t *benchMark);
+	bool contains(T item,sub_benchMark_t *benchMark);
 };
 #endif

@@ -1,12 +1,13 @@
 #include <iostream>
 using namespace std;
-#include "Optimistic_mem.h"
-#include "key.h"
-#include "node.h"
+#include "Optimistic_mem.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <queue>
 #include <stdint.h>
+#include "benchmark.hpp"
 
 #define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
 thread_local static queue<nodeFine_mem<int> *> deleteQueue;
@@ -24,7 +25,7 @@ template <class T> Optimistic_mem<T>::~Optimistic_mem() {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::add(T item,int *benchMark) {
+template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
@@ -59,7 +60,7 @@ template <class T> bool Optimistic_mem<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::remove(T item, int *benchMark) {
+template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
@@ -99,7 +100,7 @@ template <class T> bool Optimistic_mem<T>::remove(T item, int *benchMark) {
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::contains(T item, int *benchMark) {
+template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);

@@ -1,11 +1,12 @@
 #include <iostream>
 using namespace std;
-#include "Fine_Grained.h"
-#include "key.h"
-#include "node.h"
+#include "Fine_Grained.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <stdint.h>
+#include "benchmark.hpp"
 
 template <class T> FineList<T>::FineList() {
 	head = new nodeFine<T>(0, INT32_MIN);
@@ -20,7 +21,7 @@ template <class T> FineList<T>::~FineList() {
 	} 
 }
 
-template <class T> bool FineList<T>::add(T item,int *benchMark) {
+template <class T> bool FineList<T>::add(T item,sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred=NULL, *curr=NULL;
 	try {
 		int32_t key = key_calc<T>(item);
@@ -69,7 +70,7 @@ template <class T> bool FineList<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool FineList<T>::remove(T item, int *benchMark) {
+template <class T> bool FineList<T>::remove(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	head->lock();
@@ -112,7 +113,7 @@ template <class T> bool FineList<T>::remove(T item, int *benchMark) {
 	}
 }
 
-template <class T> bool FineList<T>::contains(T item, int *benchMark) {
+template <class T> bool FineList<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	head->lock();

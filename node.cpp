@@ -1,5 +1,5 @@
-#include "key.h"
-#include "node.h"
+#include "key.hpp"
+#include "node.hpp"
 #include <iostream>
 #include <stdint.h>
 #include <omp.h>

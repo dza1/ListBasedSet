@@ -1,8 +1,8 @@
 #include <iostream>
 using namespace std;
-#include "Coarse_Grained.h"
-#include "key.h"
-#include "node.h"
+#include "Coarse_Grained.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
@@ -21,7 +21,7 @@ template <class T> CoarseList<T>::~CoarseList() {
 	} 
 }
 
-template <class T> bool CoarseList<T>::add(T item,int *benchMark) {
+template <class T> bool CoarseList<T>::add(T item,sub_benchMark_t *benchMark) {
 	try {
 		node<T> *pred, *curr;
 		// lock_guard<std::mutex> g(mtx);
@@ -64,7 +64,7 @@ template <class T> bool CoarseList<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool CoarseList<T>::remove(T item, int *benchMark) {
+template <class T> bool CoarseList<T>::remove(T item, sub_benchMark_t *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	mtx.lock();
@@ -100,7 +100,7 @@ template <class T> bool CoarseList<T>::remove(T item, int *benchMark) {
 	}
 }
 
-template <class T> bool CoarseList<T>::contains(T item, int *benchMark) {
+template <class T> bool CoarseList<T>::contains(T item, sub_benchMark_t *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	mtx.lock();

@@ -1,11 +1,12 @@
 #include <iostream>
 using namespace std;
-#include "Lock_free_mem.h"
-#include "key.h"
-#include "node.h"
+#include "Lock_free_mem.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <stdint.h>
+#include "benchmark.hpp"
 
 #define COUTNMASK 0x00000000FFFFFF // mask for counter, which shows how many threads read this item
 
@@ -26,7 +27,7 @@ template <class T> LockFree_mem<T>::~LockFree_mem() {
 	}
 }
 
-template <class T> bool LockFree_mem<T>::add(T item,int *benchMark) {
+template <class T> bool LockFree_mem<T>::add(T item,sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
@@ -68,7 +69,7 @@ template <class T> bool LockFree_mem<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool LockFree_mem<T>::remove(T item, int *benchMark) {
+template <class T> bool LockFree_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	try {
 		while (true) {
@@ -113,7 +114,7 @@ template <class T> bool LockFree_mem<T>::remove(T item, int *benchMark) {
 	// }
 }
 
-template <class T> bool LockFree_mem<T>::contains(T item, int *benchMark) {
+template <class T> bool LockFree_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeAtom<T> *n = head;
 	nodeAtom<T> *curr;
 	head->hash_mem++;

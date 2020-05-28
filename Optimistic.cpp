@@ -1,11 +1,12 @@
 #include <iostream>
 using namespace std;
-#include "Optimistic.h"
-#include "key.h"
-#include "node.h"
+#include "Optimistic.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <stdint.h>
+#include "benchmark.hpp"
 
 template <class T> Optimistic<T>::Optimistic() {
 	head = new nodeFine<T>(0, INT32_MIN);
@@ -20,7 +21,7 @@ template <class T> Optimistic<T>::~Optimistic() {
 	}
 }
 
-template <class T> bool Optimistic<T>::add(T item,int *benchMark) {
+template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
 		w = find(item);
@@ -59,7 +60,7 @@ template <class T> bool Optimistic<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool Optimistic<T>::remove(T item, int *benchMark) {
+template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
 		w = find(item);
@@ -88,7 +89,7 @@ template <class T> bool Optimistic<T>::remove(T item, int *benchMark) {
 	}
 }
 
-template <class T> bool Optimistic<T>::contains(T item, int *benchMark) {
+template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
 		w = find(item);

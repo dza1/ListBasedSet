@@ -1,8 +1,8 @@
 
 #include <iostream>
 using namespace std;
-#include "node.h"
-#include  <omp.h>
+#include "node.hpp"
+#include  <omp.hpp>
 
 
 int main() {

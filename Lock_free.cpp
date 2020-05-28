@@ -1,11 +1,12 @@
 #include <iostream>
 using namespace std;
-#include "Lock_free.h"
-#include "key.h"
-#include "node.h"
+#include "Lock_free.hpp"
+#include "key.hpp"
+#include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <stdint.h>
+#include "benchmark.hpp"
 
 // template<class T>
 // struct node_t
@@ -28,7 +29,7 @@ template <class T> LockFree<T>::~LockFree() {
 	} 
 }
 
-template <class T> bool LockFree<T>::add(T item,int *benchMark) {
+template <class T> bool LockFree<T>::add(T item,sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
@@ -68,7 +69,7 @@ template <class T> bool LockFree<T>::add(T item,int *benchMark) {
 	}
 }
 
-template <class T> bool LockFree<T>::remove(T item, int *benchMark) {
+template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	try {
 		while (true) {
@@ -112,7 +113,7 @@ template <class T> bool LockFree<T>::remove(T item, int *benchMark) {
 	}
 }
 
-template <class T> bool LockFree<T>::contains(T item, int *benchMark) {
+template <class T> bool LockFree<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeAtom<T> *n = head;
 
 	int32_t key = key_calc<T>(item);
@@ -124,7 +125,7 @@ template <class T> bool LockFree<T>::contains(T item, int *benchMark) {
 
 
 
-template <class T> Window_at_t<nodeAtom<T>> LockFree<T>::find(T item, int *benchMark) {
+template <class T> Window_at_t<nodeAtom<T>> LockFree<T>::find(T item, sub_benchMark_t *benchMark) {
 
 	nodeAtom<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
@@ -144,7 +145,7 @@ retry:
 				resetFlag(&succ);
 
 				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
-					*benchMark=*benchMark+1;
+					benchMark->goToStart+=1;
 					//cout<<"Error"<<endl;
 					goto retry;
 				}

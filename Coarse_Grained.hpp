@@ -2,12 +2,12 @@
 #define COARSE_GRAINED_H__
 #include <iostream>
 using namespace std;
-#include "node.h"
+#include "node.hpp"
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
 
-#include "setlist.h"
+#include "setlist.hpp"
 
 template <typename T> class CoarseList : public SetList<T> { // The class
   private:
@@ -19,8 +19,8 @@ template <typename T> class CoarseList : public SetList<T> { // The class
 	CoarseList();
 	~CoarseList();
 
-	bool add(T item,int *benchMark);
-	bool remove(T item,int *benchMark);
-	bool contains(T item,int *benchMark);
+	bool add(T item,sub_benchMark_t *benchMark);
+	bool remove(T item,sub_benchMark_t *benchMark);
+	bool contains(T item,sub_benchMark_t *benchMark);
 };
 #endif
