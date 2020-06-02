@@ -1,5 +1,5 @@
-#ifndef LOCKFREE_H__
-#define LOCKFREE_H__
+#ifndef LOCKFREE_impr_H__
+#define LOCKFREE_impr_H__
 #include <iostream>
 using namespace std;
 #include "node.hpp"
@@ -18,7 +18,7 @@ using namespace std;
 
 
 
-template <typename T> class LockFree : public SetList<T> { // The class
+template <typename T> class LockFree_impr : public SetList<T> { // The class
   private:
 	T item;
 	Window_at_t<nodeAtom<T>> find(T item, sub_benchMark_t *benchMark);
@@ -30,10 +30,11 @@ template <typename T> class LockFree : public SetList<T> { // The class
 
   public:
 	nodeAtom<T>* head;
-	LockFree();
-	~LockFree();
+	LockFree_impr();
+	~LockFree_impr();
 	bool add(T item,sub_benchMark_t *benchMark);
 	bool remove(T item,sub_benchMark_t *benchMark);
 	bool contains(T item,sub_benchMark_t *benchMark);
+	void emteyQueue(bool final){}; //not used
 };
 #endif

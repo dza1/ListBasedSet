@@ -9,6 +9,7 @@ template <typename T> class SetList {
 	virtual bool add(T item, sub_benchMark_t *benchMark) = 0;
 	virtual bool remove(T item, sub_benchMark_t *benchMark) = 0;
 	virtual bool contains(T item, sub_benchMark_t *benchMark) = 0;
+	virtual void emteyQueue(bool final)=0;
 	SetList() { ; }
 	virtual ~SetList() { ; }
 };

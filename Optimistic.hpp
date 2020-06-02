@@ -7,14 +7,14 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
-#include "setlist.hpp"
 #include "Window.hpp"
+#include "setlist.hpp"
 
 template <typename T> class Optimistic : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_t<T> find(T item);
+	Window_t<T> find(T item, sub_benchMark_t *benchMark);
 	void lock(Window_t<T> w);
 	void unlock(Window_t<T> w);
 	bool validate(Window_t<T> w);
@@ -23,8 +23,9 @@ template <typename T> class Optimistic : public SetList<T> { // The class
 	nodeFine<T> *head;
 	Optimistic();
 	~Optimistic();
-	bool add(T item,sub_benchMark_t *benchMark);
-	bool remove(T item,sub_benchMark_t *benchMark);
-	bool contains(T item,sub_benchMark_t *benchMark);
+	bool add(T item, sub_benchMark_t *benchMark);
+	bool remove(T item, sub_benchMark_t *benchMark);
+	bool contains(T item, sub_benchMark_t *benchMark);
+
 };
 #endif

@@ -24,7 +24,7 @@ template <class T> Optimistic<T>::~Optimistic() {
 template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
-		w = find(item);
+		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
 
 		// Item already in the set
@@ -63,7 +63,7 @@ template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
-		w = find(item);
+		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
 
 		if (key == w.curr->key) {
@@ -92,7 +92,7 @@ template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark
 template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMark) {
 	Window_t<T> w;
 	try {
-		w = find(item);
+		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
 
 		if (key == w.curr->key) {
@@ -116,7 +116,7 @@ template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMa
 	}
 }
 
-template <class T> Window_t<T> Optimistic<T>::find(T item) {
+template <class T> Window_t<T> Optimistic<T>::find(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc(item);
 	// lock_guard<std::mutex> g(mtx);
@@ -138,6 +138,7 @@ template <class T> Window_t<T> Optimistic<T>::find(T item) {
 			return w;
 		} else { // not reachable
 			unlock(w);
+			benchMark->goToStart+=1;
 		}
 	}
 }

@@ -62,5 +62,9 @@
 		"typeinfo": "cpp",
 		"codecvt": "cpp",
 		"future": "cpp"
-	}
+	},
+	"cSpell.enableFiletypes": [
+		"!cpp",
+		"latex"
+	]
 }

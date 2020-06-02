@@ -1,34 +1,32 @@
 #include <iostream>
 using namespace std;
-#include "Lock_free.hpp"
+#include "Lock_free_impr.hpp"
+#include "benchmark.hpp"
 #include "key.hpp"
 #include "node.hpp"
 #include <assert.h>
 #include <omp.h>
 #include <stdint.h>
-#include "benchmark.hpp"
 
-
-
-template <class T> LockFree<T>::LockFree() {
+template <class T> LockFree_impr<T>::LockFree_impr() {
 	head = new nodeAtom<T>(0, INT32_MIN);
 	head->next = new nodeAtom<T>(0, INT32_MAX);
 }
 
-template <class T> LockFree<T>::~LockFree() {
+template <class T> LockFree_impr<T>::~LockFree_impr() {
 	while (head != NULL) {
-		nodeAtom<T>* oldHead = head;
+		nodeAtom<T> *oldHead = head;
 		head = getPointer(head->next);
 		delete oldHead;
-	} 
+	}
 }
 
-template <class T> bool LockFree<T>::add(T item,sub_benchMark_t *benchMark) {
+template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
 		while (true) {
-			w = find(item,benchMark);
+			w = find(item, benchMark);
 			nodeAtom<T> *pred = w.pred;
 			nodeAtom<T> *curr = w.curr;
 
@@ -36,18 +34,18 @@ template <class T> bool LockFree<T>::add(T item,sub_benchMark_t *benchMark) {
 			if (curr->key == key) {
 				return false;
 			}
-			assert(pred->key<key && curr->key>key);
-	
+			assert(pred->key < key && curr->key > key);
+
 			// Add item to the set
 			nodeAtom<T> *n = new nodeAtom<T>(item);
 			n->next.store(w.curr);
 			// n->next.store(resetFlag(&n->next.load()));
 			resetFlag(&n->next);
 
-			if (atomic_compare_exchange_weak(&pred->next, &curr, n) == true) {
+			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == true) {
 				return true;
 			}
-			
+			benchMark->goToStart+=1;
 		}
 
 	}
@@ -65,12 +63,12 @@ template <class T> bool LockFree<T>::add(T item,sub_benchMark_t *benchMark) {
 	}
 }
 
-template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) {
+template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_at_t<nodeAtom<T>> w;
 	try {
 		while (true) {
 
-			w = find(item,benchMark);
+			w = find(item, benchMark);
 			int32_t key = key_calc<T>(item);
 
 			if (key == w.curr->key) {
@@ -89,10 +87,8 @@ template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) 
 
 				// try to unlink
 				atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ);
-
 				return true;
 			} else {
-
 				return false;
 			}
 		}
@@ -109,7 +105,7 @@ template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) 
 	}
 }
 
-template <class T> bool LockFree<T>::contains(T item, sub_benchMark_t *benchMark) {
+template <class T> bool LockFree_impr<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeAtom<T> *n = head;
 
 	int32_t key = key_calc<T>(item);
@@ -119,17 +115,18 @@ template <class T> bool LockFree<T>::contains(T item, sub_benchMark_t *benchMark
 	return n->key == key && !getFlag(n->next.load());
 }
 
+template <class T> Window_at_t<nodeAtom<T>> LockFree_impr<T>::find(T item, sub_benchMark_t *benchMark) {
 
-
-template <class T> Window_at_t<nodeAtom<T>> LockFree<T>::find(T item, sub_benchMark_t *benchMark) {
-
-	nodeAtom<T> *pred, *curr;
+	nodeAtom<T> *pred, *curr, *old;
+	;
 	int32_t key = key_calc<T>(item);
+	old = head;
 retry:
 	while (true) {
 		pred = head;
 		curr = getPointer(pred->next.load());
 
+		// get through the list
 		while (true) {
 			assert(pred->next != NULL);
 			nodeAtom<T> *succ = getPointer(curr->next.load());
@@ -139,10 +136,15 @@ retry:
 				resetFlag(&curr);
 				resetFlag(&succ);
 
-				//not possible to link out
+				//  link out curr, not possible when pred is flaged
 				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
-					benchMark->goToStart+=1;
-					//cout<<"Error"<<endl;
+					if (getFlag(old->next) == false && pred != old) { 
+						pred = old;
+						curr = getPointer(pred->next);
+						succ = getPointer(curr->next);
+						continue;
+					}
+					benchMark->goToStart += 1;
 					goto retry;
 				}
 				curr = succ;
@@ -152,37 +154,38 @@ retry:
 				Window_at_t<nodeAtom<T>> w{pred, curr};
 				return w;
 			}
+			old = pred;
 			pred = curr;
 			curr = succ;
 		}
 	}
 }
 
-template <class T> nodeAtom<T> *LockFree<T>::getPointer(nodeAtom<T> *pointer) {
+template <class T> nodeAtom<T> *LockFree_impr<T>::getPointer(nodeAtom<T> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer;
 	return (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
-template <class T> void LockFree<T>::setFlag(nodeAtom<T> **pointer) {
+template <class T> void LockFree_impr<T>::setFlag(nodeAtom<T> **pointer) {
 	// cout <<endl <<"Pointer: "<<*pointer <<" ";
 	uint64_t u64_ptr = (uint64_t)*pointer;
 	*pointer = (nodeAtom<T> *)(u64_ptr |= MASK);
 	// cout <<*pointer <<" "<<u64_ptr << endl;
 }
 
-template <class T> void LockFree<T>::resetFlag(nodeAtom<T> **pointer) {
+template <class T> void LockFree_impr<T>::resetFlag(nodeAtom<T> **pointer) {
 	uint64_t u64_ptr = (uint64_t)*pointer;
 	*pointer = (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
-template <class T> void LockFree<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
+template <class T> void LockFree_impr<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer->load();
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
 
-template <class T> bool LockFree<T>::getFlag(nodeAtom<T> *pointer) {
+template <class T> bool LockFree_impr<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
 
-template class LockFree<int>;
-// template class LockFree<float>;
+template class LockFree_impr<int>;
+// template class LockFree_impr<float>;
