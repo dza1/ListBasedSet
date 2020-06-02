@@ -14,10 +14,10 @@ template <typename T> class Optimistic : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_t<T> find(T item, sub_benchMark_t *benchMark);
-	void lock(Window_t<T> w);
-	void unlock(Window_t<T> w);
-	bool validate(Window_t<T> w);
+	Window_t<nodeFine<T>> find(T item, sub_benchMark_t *benchMark);
+	void lock(Window_t<nodeFine<T>> w);
+	void unlock(Window_t<nodeFine<T>> w);
+	bool validate(Window_t<nodeFine<T>> w);
 
   public:
 	nodeFine<T> *head;
@@ -26,6 +26,7 @@ template <typename T> class Optimistic : public SetList<T> { // The class
 	bool add(T item, sub_benchMark_t *benchMark);
 	bool remove(T item, sub_benchMark_t *benchMark);
 	bool contains(T item, sub_benchMark_t *benchMark);
+	void emteyQueue(bool final){}; //not used
 
 };
 #endif

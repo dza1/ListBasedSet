@@ -23,7 +23,7 @@ template <typename T> class LockFree_mem : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_at_t<nodeAtom<T>> find(T item);
+	Window_t<nodeAtom<T>> find(T item);
 	nodeAtom<T>* getPointer(nodeAtom<T>* pointer);
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);

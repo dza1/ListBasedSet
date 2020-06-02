@@ -21,7 +21,7 @@ using namespace std;
 template <typename T> class LockFree : public SetList<T> { // The class
   private:
 	T item;
-	Window_at_t<nodeAtom<T>> find(T item, sub_benchMark_t *benchMark);
+	Window_t<nodeAtom<T>> find(T item, sub_benchMark_t *benchMark);
 	nodeAtom<T>* getPointer(nodeAtom<T>* pointer);
 	void setFlag(nodeAtom<T>** pointer);
 	void resetFlag(nodeAtom<T>** pointer);
@@ -35,5 +35,6 @@ template <typename T> class LockFree : public SetList<T> { // The class
 	bool add(T item,sub_benchMark_t *benchMark);
 	bool remove(T item,sub_benchMark_t *benchMark);
 	bool contains(T item,sub_benchMark_t *benchMark);
+	void emteyQueue(bool final){}; //not used
 };
 #endif

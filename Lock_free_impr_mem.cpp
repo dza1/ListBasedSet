@@ -1,3 +1,9 @@
+/** @file Lock_free_impr_mem.cpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief List based set, which is lockfree with included memory management. 
+ */
 #include <iostream>
 using namespace std;
 #include "Lock_free_impr_mem.hpp"
@@ -15,6 +21,9 @@ using namespace std;
 
 thread_local queue<node_atomic_del<int> *> deleteQueue;
 
+/**
+ * @brief Constructor for the datastructure
+ */
 template <class T> LockFree_impr_mem<T>::LockFree_impr_mem() {
 	head = new nodeAtom<T>(0, INT32_MIN);
 	head->next = new nodeAtom<T>(0, INT32_MAX);
@@ -22,19 +31,32 @@ template <class T> LockFree_impr_mem<T>::LockFree_impr_mem() {
 	Tmax = omp_get_max_threads();
 	snap = new std::atomic<uint32_t>[Tmax];
 	// std::fill(snap, snap + Tmax * sizeof(uint32_t), 0);
+	for (size_t i = 0; i < Tmax; i++) {
+		snap[i].store(0);
+	}
 }
 
+/**
+ * @brief Destructor for the datastructure
+ */
 template <class T> LockFree_impr_mem<T>::~LockFree_impr_mem() {
 	while (head != NULL) {
 		nodeAtom<T> *oldHead = head;
 		head = getPointer(head->next);
 		delete oldHead;
 	}
-	delete snap;
+	delete[] snap;
 }
 
+/**
+ * @brief Function which removes one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be add to the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully added, false otherwise
+ */
 template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	int tid = omp_get_thread_num();
 	try {
@@ -55,12 +77,13 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 			n->next.store(w.curr);
 			// n->next.store(resetFlag(&n->next.load()));
 			resetFlag(&n->next);
-
-			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == true) {
-				snap[tid]++;
-				return true;
+			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == false) { // include node
+				delete n;
+				benchMark->goToStart += 1;
+				continue;
 			}
-			benchMark->goToStart += 1;
+			emptyQueue(false);
+			return true;
 		}
 
 	}
@@ -78,8 +101,15 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 	}
 }
 
+/**
+ * @brief Function which removes one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be removed from the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully removed, false otherwise
+ */
 template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	try {
 		while (true) {
 
@@ -95,20 +125,20 @@ template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *be
 				// delete w.curr;
 
 				// mark as deleted
-				if (atomic_compare_exchange_weak(&w.curr->next, &succ, markedsucc) == false) {
+				if (atomic_compare_exchange_strong(&w.curr->next, &succ, markedsucc) == false) {
 					benchMark->goToStart += 1;
 					continue;
 				}
 
 				// try to unlink
-				if (atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ) == true) {
+				if (atomic_compare_exchange_strong(&w.pred->next, &w.curr, succ) == true) {
 
 					deleteQueue.push(new node_atomic_del<T>(w.curr, this->snap, this->Tmax));
 				}
-				emteyQueue(false);
+				emptyQueue(false);
 				return true;
 			} else {
-				emteyQueue(false);
+				emptyQueue(false);
 				return false;
 			}
 		}
@@ -125,6 +155,13 @@ template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *be
 	}
 }
 
+/**
+ * @brief Function which checks if the item is in the datastructure 
+ *
+ * @param[in]  	item  		item for check if it is included
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if item is in the datastructure, false otherwise 
+ */
 template <class T> bool LockFree_impr_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeAtom<T> *n = head;
 
@@ -133,11 +170,18 @@ template <class T> bool LockFree_impr_mem<T>::contains(T item, sub_benchMark_t *
 		n = getPointer(n->next.load());
 	}
 	bool result = n->key == key && !getFlag(n->next.load());
-	emteyQueue(false);
+	emptyQueue(false);
 	return result;
 }
 
-template <class T> Window_at_t<nodeAtom<T>> LockFree_impr_mem<T>::find(T item, sub_benchMark_t *benchMark) {
+/**
+ * @brief Function which returns a window, where the key is of the first element is smaller than the key of the item,
+ * and the second key bigger or equal. 
+ *
+ * @param[in]  	item  		item, from which the key is calculated to search the window 
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ */
+template <class T> Window_t<nodeAtom<T>> LockFree_impr_mem<T>::find(T item, sub_benchMark_t *benchMark) {
 
 	nodeAtom<T> *pred, *curr, *old;
 	;
@@ -153,14 +197,14 @@ retry:
 			assert(pred->next != NULL);
 			nodeAtom<T> *succ = getPointer(curr->next.load());
 
-			// link out marked items
+			// unlink marked items
 			while (getFlag(curr->next.load())) {
 				resetFlag(&curr);
 				resetFlag(&succ);
 
 				//  link out curr, not possible when pred is flaged
 				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
-					if (getFlag(old->next) == false && pred != old) { // impruvement
+					if (getFlag(old->next) == false && pred != old) { // improvement
 						pred = old;
 						curr = getPointer(pred->next);
 						succ = getPointer(curr->next);
@@ -169,11 +213,14 @@ retry:
 					benchMark->goToStart += 1;
 					goto retry;
 				}
+				deleteQueue.push(
+					new node_atomic_del<T>(curr, this->snap, this->Tmax)); // put in de que for delete candidats
 				curr = succ;
 				succ = getPointer(succ->next.load());
 			}
 			if (curr->key >= key) {
-				Window_at_t<nodeAtom<T>> w{pred, curr};
+				assert(pred->key < key && curr->key >= key);
+				Window_t<nodeAtom<T>> w{pred, curr};
 				return w;
 			}
 			old = pred;
@@ -183,11 +230,22 @@ retry:
 	}
 }
 
+/**
+ * @brief Function return pointer without a flag
+ *
+ * @param	[in]  pointer  	pointer to the node with flag included
+ * @return 	pointer without flag
+ */
 template <class T> nodeAtom<T> *LockFree_impr_mem<T>::getPointer(nodeAtom<T> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer;
 	return (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
+/**
+ * @brief Function set flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr_mem<T>::setFlag(nodeAtom<T> **pointer) {
 	// cout <<endl <<"Pointer: "<<*pointer <<" ";
 	uint64_t u64_ptr = (uint64_t)*pointer;
@@ -195,28 +253,54 @@ template <class T> void LockFree_impr_mem<T>::setFlag(nodeAtom<T> **pointer) {
 	// cout <<*pointer <<" "<<u64_ptr << endl;
 }
 
+/**
+ * @brief Function reset flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr_mem<T>::resetFlag(nodeAtom<T> **pointer) {
 	uint64_t u64_ptr = (uint64_t)*pointer;
 	*pointer = (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
+/**
+ * @brief Function reset flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr_mem<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer->load();
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
 
+/**
+ * @brief Function return if node is marked for delete
+ *
+ * @param	[in]  pointer  	pointer to the node
+ * @return 	flag, if node is marded for delete
+ */
 template <class T> bool LockFree_impr_mem<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
 
-template <class T> void LockFree_impr_mem<T>::emteyQueue(bool final) {
+
+/**
+ * @brief Function to empty and delete que of candidats for delete
+ *
+ * @details emptyQueue is always called before return from this object. It checks, if
+ * each thread increased allready the timestamp, to be sure, that no one reads the
+ * node during delete
+ *
+ * @param[in]  final  	if it is true, the function doesn't check if snap changed
+ */
+template <class T> void LockFree_impr_mem<T>::emptyQueue(bool final) {
 	int tid = omp_get_thread_num();
 	while (deleteQueue.empty() == false) {
 		node_atomic_del<T> *curr = deleteQueue.front();
 		snap[tid]++;
 		if (final == false) {
 			for (size_t i = 0; i < this->Tmax; i++) {
-				if (curr->snap[i] == this->snap[i]) {
+				if (curr->snap[i] == this->snap[i].load()) {
 					return;
 				}
 			}
@@ -227,16 +311,30 @@ template <class T> void LockFree_impr_mem<T>::emteyQueue(bool final) {
 	return;
 }
 
-template <class T>
-node_atomic_del<T>::node_atomic_del(nodeAtom<T> *pointer, std::atomic<uint32_t> *snap, size_t T_max) {
+
+/**
+ * @brief Constructor for create a node with a canidate for delete
+ *
+ * @param[in]  pointer  	Pointer to the node which should be deleted
+ * @param[in]  snap  		snapshot of all timestamp, when the node was put in the queue
+ * @param[in]  Tmax  		Amount of maximal threads
+ */
+template <class T> node_atomic_del<T>::node_atomic_del(nodeAtom<T> *pointer, std::atomic<uint32_t> *snap, size_t Tmax) {
 	this->pointer = pointer;
-	this->snap = new std::atomic<uint32_t>[T_max];
-	std::memcpy(this->snap, snap, T_max * sizeof(uint32_t));
+	this->snap = new uint32_t[Tmax];
+	// std::memcpy(this->snap, snap, T_max * sizeof(uint32_t));
+	for (size_t i = 0; i < Tmax; i++) {
+		this->snap[i] = snap[i].load();
+	}
 }
 
+/**
+ * @brief Destructor for node with a canidate for delete
+ *
+ */
 template <class T> node_atomic_del<T>::~node_atomic_del() {
 	delete pointer;
-	delete snap;
+	delete[] snap;
 }
 
 template class LockFree_impr_mem<int>;

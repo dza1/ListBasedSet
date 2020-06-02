@@ -14,10 +14,10 @@ template <typename T> class Optimistic_mem : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_at_t<nodeFine_mem<T>> find(T item);
-	void lock(Window_at_t<nodeFine_mem<T>> w);
-	void unlock(Window_at_t<nodeFine_mem<T>> w);
-	bool validate(Window_at_t<nodeFine_mem<T>> w);
+	Window_t<nodeFine_mem<T>> find(T item);
+	void lock(Window_t<nodeFine_mem<T>> w);
+	void unlock(Window_t<nodeFine_mem<T>> w);
+	bool validate(Window_t<nodeFine_mem<T>> w);
 	void deleteNodes();
 
   public:

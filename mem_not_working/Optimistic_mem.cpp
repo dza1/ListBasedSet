@@ -26,7 +26,7 @@ template <class T> Optimistic_mem<T>::~Optimistic_mem() {
 }
 
 template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark) {
-	Window_at_t<nodeFine_mem<T>> w;
+	Window_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
 		int32_t key = key_calc<T>(item);
@@ -61,7 +61,7 @@ template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark
 }
 
 template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeFine_mem<T>> w;
+	Window_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
 		int32_t key = key_calc<T>(item);
@@ -101,7 +101,7 @@ template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *bench
 }
 
 template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeFine_mem<T>> w;
+	Window_t<nodeFine_mem<T>> w;
 	try {
 		w = find(item);
 		int32_t key = key_calc<T>(item);
@@ -127,7 +127,7 @@ template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *ben
 	}
 }
 
-template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) {
+template <class T> Window_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) {
 	nodeFine_mem<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
 	// lock_guard<std::mutex> g(mtx);
@@ -177,7 +177,7 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 			// old->key,(int)old->hash_mem,__LINE__,(void*)old);
 		}
 
-		Window_at_t<nodeFine_mem<T>> w{pred, curr};
+		Window_t<nodeFine_mem<T>> w{pred, curr};
 		lock(w);
 		pred->hash_mem--;
 		curr->hash_mem--;
@@ -194,7 +194,7 @@ template <class T> Window_at_t<nodeFine_mem<T>> Optimistic_mem<T>::find(T item) 
 	}
 }
 
-template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>> w) {
+template <class T> bool Optimistic_mem<T>::validate(Window_t<nodeFine_mem<T>> w) {
 	nodeFine_mem<T> *n = head;
 	n->hash_mem++;
 	int64_t hash;
@@ -235,12 +235,12 @@ template <class T> bool Optimistic_mem<T>::validate(Window_at_t<nodeFine_mem<T>>
 	return false;
 }
 
-template <class T> void Optimistic_mem<T>::lock(Window_at_t<nodeFine_mem<T>> w) {
+template <class T> void Optimistic_mem<T>::lock(Window_t<nodeFine_mem<T>> w) {
 	w.pred->lock();
 	w.curr->lock();
 }
 
-template <class T> void Optimistic_mem<T>::unlock(Window_at_t<nodeFine_mem<T>> w) {
+template <class T> void Optimistic_mem<T>::unlock(Window_t<nodeFine_mem<T>> w) {
 	w.pred->unlock();
 	w.curr->unlock();
 }

@@ -113,22 +113,22 @@ int main(int argc, char *argv[]) {
 			// BENCHM_TO_CSV(outFile, "LockFree", maxTd, benchMark,testSizePre,testSizeMain);
 
 
-			// ////////////////////// LockFree_impr /////////////////////
-			// cout << white << "LockFree_impr:" << endl;
-			// for (size_t i = 0; i < REPEAT_TESTS; i++) {
-			// 	list = new LockFree_impr<int>();
-			// 	cout << "Pre: ";
-			// 	benchMark_arr[i] = BENCHMARK_E;
-			// 	runtest(testcases[0], list, &benchMark_arr[i].pre);
-			// 	cout << "Main: ";
-			// 	runtest(testcases[1], list, &benchMark_arr[i].main);
-			// 	cout << "Check: ";
-			// 	check(testcases[1], list, &benchMark_arr[i].check);
-			// 	delete list;
-			// }
-			// benchMark=BENCHMARK_E;
-			// averBenchm(benchMark_arr,&benchMark);
-			// BENCHM_TO_CSV(outFile, "LockFree_impr", maxTd, benchMark,testSizePre,testSizeMain);
+			////////////////////// LockFree_impr /////////////////////
+			cout << white << "LockFree_impr:" << endl;
+			for (size_t i = 0; i < REPEAT_TESTS; i++) {
+				list = new LockFree_impr<int>();
+				cout << "Pre: ";
+				benchMark_arr[i] = BENCHMARK_E;
+				runtest(testcases[0], list, &benchMark_arr[i].pre);
+				cout << "Main: ";
+				runtest(testcases[1], list, &benchMark_arr[i].main);
+				cout << "Check: ";
+				check(testcases[1], list, &benchMark_arr[i].check);
+				delete list;
+			}
+			benchMark=BENCHMARK_E;
+			averBenchm(benchMark_arr,&benchMark);
+			BENCHM_TO_CSV(outFile, "LockFree_impr", maxTd, benchMark,testSizePre,testSizeMain);
 
 			////////////////////// LockFree_impr /////////////////////
 			cout << white << "LockFree_impr_mem:" << endl;
@@ -186,7 +186,7 @@ static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark
 			}
 		}
 		sub_benchMark_arr[tid] = sub_benchMark_loc;
-		list->emteyQueue(true);
+		list->emptyQueue(true);
 	}
 
 	auto finish = chrono::high_resolution_clock::now();

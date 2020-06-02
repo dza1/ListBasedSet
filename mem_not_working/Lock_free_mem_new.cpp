@@ -28,7 +28,7 @@ template <class T> LockFree_mem<T>::~LockFree_mem() {
 }
 
 template <class T> bool LockFree_mem<T>::add(T item,sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
 		while (true) {
@@ -70,7 +70,7 @@ template <class T> bool LockFree_mem<T>::add(T item,sub_benchMark_t *benchMark) 
 }
 
 template <class T> bool LockFree_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	try {
 		while (true) {
 
@@ -139,7 +139,7 @@ template <class T> bool LockFree_mem<T>::contains(T item, sub_benchMark_t *bench
 	return benchMark;
 }
 
-template <class T> Window_at_t<nodeAtom<T>> LockFree_mem<T>::find(T item) {
+template <class T> Window_t<nodeAtom<T>> LockFree_mem<T>::find(T item) {
 	int tid = omp_get_thread_num();
 	nodeAtom<T> *pred;
 	nodeAtom<T> *curr;
@@ -218,7 +218,7 @@ retry:
 				}
 			}
 			if (curr->key >= key) {
-				Window_at_t<nodeAtom<T>> w{pred, curr};
+				Window_t<nodeAtom<T>> w{pred, curr};
 				pred->hash_mem--;
 				curr->hash_mem--;
 				succ->hash_mem--;

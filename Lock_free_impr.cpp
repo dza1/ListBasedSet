@@ -22,7 +22,7 @@ template <class T> LockFree_impr<T>::~LockFree_impr() {
 }
 
 template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
 	try {
 		while (true) {
@@ -64,7 +64,7 @@ template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark
 }
 
 template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_at_t<nodeAtom<T>> w;
+	Window_t<nodeAtom<T>> w;
 	try {
 		while (true) {
 
@@ -115,7 +115,7 @@ template <class T> bool LockFree_impr<T>::contains(T item, sub_benchMark_t *benc
 	return n->key == key && !getFlag(n->next.load());
 }
 
-template <class T> Window_at_t<nodeAtom<T>> LockFree_impr<T>::find(T item, sub_benchMark_t *benchMark) {
+template <class T> Window_t<nodeAtom<T>> LockFree_impr<T>::find(T item, sub_benchMark_t *benchMark) {
 
 	nodeAtom<T> *pred, *curr, *old;
 	;
@@ -151,7 +151,7 @@ retry:
 				succ = getPointer(succ->next.load());
 			}
 			if (curr->key >= key) {
-				Window_at_t<nodeAtom<T>> w{pred, curr};
+				Window_t<nodeAtom<T>> w{pred, curr};
 				return w;
 			}
 			old = pred;

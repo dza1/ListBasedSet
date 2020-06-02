@@ -22,7 +22,7 @@ template <class T> Optimistic<T>::~Optimistic() {
 }
 
 template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
-	Window_t<T> w;
+	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
@@ -61,7 +61,7 @@ template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 }
 
 template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_t<T> w;
+	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
@@ -90,7 +90,7 @@ template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark
 }
 
 template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMark) {
-	Window_t<T> w;
+	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
@@ -116,7 +116,7 @@ template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMa
 	}
 }
 
-template <class T> Window_t<T> Optimistic<T>::find(T item, sub_benchMark_t *benchMark) {
+template <class T> Window_t<nodeFine<T>> Optimistic<T>::find(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
 	int32_t key = key_calc(item);
 	// lock_guard<std::mutex> g(mtx);
@@ -130,7 +130,7 @@ template <class T> Window_t<T> Optimistic<T>::find(T item, sub_benchMark_t *benc
 			curr = curr->next;
 		}
 
-		Window_t<T> w{pred, curr};
+		Window_t<nodeFine<T>> w{pred, curr};
 		lock(w);
 		assert(w.pred->key <= key);
 		assert(w.curr->key >= key);
@@ -143,7 +143,7 @@ template <class T> Window_t<T> Optimistic<T>::find(T item, sub_benchMark_t *benc
 	}
 }
 
-template <class T> bool Optimistic<T>::validate(Window_t<T> w) {
+template <class T> bool Optimistic<T>::validate(Window_t<nodeFine<T>> w) {
 	nodeFine<T> *n = head;
 	while (n->key <= w.pred->key) {
 		assert(n->next != NULL);
@@ -157,12 +157,12 @@ template <class T> bool Optimistic<T>::validate(Window_t<T> w) {
 	return false;
 }
 
-template <class T> void Optimistic<T>::lock(Window_t<T> w) {
+template <class T> void Optimistic<T>::lock(Window_t<nodeFine<T>> w) {
 	w.pred->lock();
 	w.curr->lock();
 }
 
-template <class T> void Optimistic<T>::unlock(Window_t<T> w) {
+template <class T> void Optimistic<T>::unlock(Window_t<nodeFine<T>> w) {
 	w.pred->unlock();
 	w.curr->unlock();
 }
