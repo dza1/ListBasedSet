@@ -35,6 +35,6 @@ template <typename T> class LockFree : public SetList<T> { // The class
 	bool add(T item,sub_benchMark_t *benchMark);
 	bool remove(T item,sub_benchMark_t *benchMark);
 	bool contains(T item,sub_benchMark_t *benchMark);
-	void emteyQueue(bool final){}; //not used
+	void emptyQueue(bool final){}; //not used
 };
 #endif

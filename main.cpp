@@ -4,6 +4,7 @@
 #include "Lock_free_impr.hpp"
 #include "Lock_free_impr_mem.hpp"
 #include "Optimistic.hpp"
+#include "Optimistic_mem.hpp"
 #include "benchmark.hpp"
 #include <omp.h>
 //#include <stdint.h>
@@ -95,6 +96,23 @@ int main(int argc, char *argv[]) {
 			// averBenchm(benchMark_arr,&benchMark);
 			// BENCHM_TO_CSV(outFile, "Optimistic", maxTd, benchMark,testSizePre,testSizeMain);
 
+			////////////////////// Optimistic_mem /////////////////////
+			cout << white << "Optimistic_mem:" << endl;
+			for (size_t i = 0; i < REPEAT_TESTS; i++) {
+				list = new Optimistic_mem<int>();
+				cout << "Pre: ";
+				benchMark_arr[i] = BENCHMARK_E;
+				runtest(testcases[0], list, &benchMark_arr[i].pre);
+				cout << "Main: ";
+				runtest(testcases[1], list, &benchMark_arr[i].main);
+				cout << "Check: ";
+				check(testcases[1], list, &benchMark_arr[i].check);
+				delete list;
+			}
+			benchMark=BENCHMARK_E;
+			averBenchm(benchMark_arr,&benchMark);
+			BENCHM_TO_CSV(outFile, "Optimistic_mem", maxTd, benchMark,testSizePre,testSizeMain);
+
 			// ////////////////////// LockFree /////////////////////
 			// cout << white << "LockFree:" << endl;
 			// for (size_t i = 0; i < REPEAT_TESTS; i++) {
@@ -113,39 +131,39 @@ int main(int argc, char *argv[]) {
 			// BENCHM_TO_CSV(outFile, "LockFree", maxTd, benchMark,testSizePre,testSizeMain);
 
 
-			////////////////////// LockFree_impr /////////////////////
-			cout << white << "LockFree_impr:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new LockFree_impr<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "LockFree_impr", maxTd, benchMark,testSizePre,testSizeMain);
+			// ////////////////////// LockFree_impr /////////////////////
+			// cout << white << "LockFree_impr:" << endl;
+			// for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			// 	list = new LockFree_impr<int>();
+			// 	cout << "Pre: ";
+			// 	benchMark_arr[i] = BENCHMARK_E;
+			// 	runtest(testcases[0], list, &benchMark_arr[i].pre);
+			// 	cout << "Main: ";
+			// 	runtest(testcases[1], list, &benchMark_arr[i].main);
+			// 	cout << "Check: ";
+			// 	check(testcases[1], list, &benchMark_arr[i].check);
+			// 	delete list;
+			// }
+			// benchMark=BENCHMARK_E;
+			// averBenchm(benchMark_arr,&benchMark);
+			// BENCHM_TO_CSV(outFile, "LockFree_impr", maxTd, benchMark,testSizePre,testSizeMain);
 
-			////////////////////// LockFree_impr /////////////////////
-			cout << white << "LockFree_impr_mem:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new LockFree_impr_mem<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "LockFree_impr_mem", maxTd, benchMark,testSizePre,testSizeMain);
+			// ////////////////////// LockFree_impr /////////////////////
+			// cout << white << "LockFree_impr_mem:" << endl;
+			// for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			// 	list = new LockFree_impr_mem<int>();
+			// 	cout << "Pre: ";
+			// 	benchMark_arr[i] = BENCHMARK_E;
+			// 	runtest(testcases[0], list, &benchMark_arr[i].pre);
+			// 	cout << "Main: ";
+			// 	runtest(testcases[1], list, &benchMark_arr[i].main);
+			// 	cout << "Check: ";
+			// 	check(testcases[1], list, &benchMark_arr[i].check);
+			// 	delete list;
+			// }
+			// benchMark=BENCHMARK_E;
+			// averBenchm(benchMark_arr,&benchMark);
+			// BENCHM_TO_CSV(outFile, "LockFree_impr_mem", maxTd, benchMark,testSizePre,testSizeMain);
 		}
 	} else {
 		cout << "Unable to open file to write the results";

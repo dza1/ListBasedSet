@@ -19,7 +19,7 @@ using namespace std;
 #define FLAG_POS 63
 #define MASK 1ULL << FLAG_POS
 
-thread_local queue<node_atomic_del<int> *> deleteQueue;
+static thread_local queue<node_atomic_del<int> *> deleteQueue;
 
 /**
  * @brief Constructor for the datastructure
@@ -58,7 +58,6 @@ template <class T> LockFree_impr_mem<T>::~LockFree_impr_mem() {
 template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
-	int tid = omp_get_thread_num();
 	try {
 		while (true) {
 			w = find(item, benchMark);
@@ -67,7 +66,7 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 
 			// Item already in the set
 			if (curr->key == key) {
-				snap[tid]++;
+				emptyQueue(false);
 				return false;
 			}
 			assert(pred->key < key && curr->key > key);

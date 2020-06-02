@@ -115,11 +115,11 @@ deleteNodes();
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	}
-	// catch (...) {
+	catch (...) {
 
-	// 	cerr << "Error during add the item: " << item << std::endl;
-	// 	return false;
-	// }
+		cerr << "Error during add the item: " << item << std::endl;
+		return false;
+	}
 }
 
 template <class T> bool LockFree_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
