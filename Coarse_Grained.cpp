@@ -1,3 +1,9 @@
+/** @file Coarse_Grained.cpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief list based set, which locks the whole datastructure, when it is reading or writing on it
+ */
 #include <iostream>
 using namespace std;
 #include "Coarse_Grained.hpp"
@@ -8,11 +14,17 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
+/**
+ * @brief Constructor for the datastructure
+ */
 template <class T> CoarseList<T>::CoarseList() {
 	head = new node<T>(0, INT32_MIN);
 	head->next = new node<T>(0, INT32_MAX);
 }
 
+/**
+ * @brief Destructor for the datastructure
+ */
 template <class T> CoarseList<T>::~CoarseList() {
 	while (head != NULL) {
 		node<T>* oldHead = head;
@@ -21,10 +33,16 @@ template <class T> CoarseList<T>::~CoarseList() {
 	} 
 }
 
+/**
+ * @brief Function which adds one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be add to the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully added, false otherwise
+ */
 template <class T> bool CoarseList<T>::add(T item,sub_benchMark_t *benchMark) {
 	try {
 		node<T> *pred, *curr;
-		// lock_guard<std::mutex> g(mtx);
 		mtx.lock();
 		pred = head;
 		curr = pred->next;
@@ -64,6 +82,13 @@ template <class T> bool CoarseList<T>::add(T item,sub_benchMark_t *benchMark) {
 	}
 }
 
+/**
+ * @brief Function which removes one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be removed from the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully removed, false otherwise
+ */
 template <class T> bool CoarseList<T>::remove(T item, sub_benchMark_t *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
@@ -100,6 +125,13 @@ template <class T> bool CoarseList<T>::remove(T item, sub_benchMark_t *benchMark
 	}
 }
 
+/**
+ * @brief Function which checks if the item is in the datastructure
+ *
+ * @param[in]  	item  		item for check if it is included
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if item is in the datastructure, false otherwise
+ */
 template <class T> bool CoarseList<T>::contains(T item, sub_benchMark_t *benchMark) {
 	node<T> *pred, *curr;
 	int32_t key = key_calc<T>(item);
@@ -135,4 +167,3 @@ template <class T> bool CoarseList<T>::contains(T item, sub_benchMark_t *benchMa
 }
 
 template class CoarseList<int>;
-// template class CoarseList<float>;

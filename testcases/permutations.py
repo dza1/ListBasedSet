@@ -1,7 +1,9 @@
 import random
+import os
 
-FILE_AMOUNT = 5
-
+FILE_AMOUNT = 1
+RAW_BASE = 100 #amount of lines for the first file
+COOLUMS_BASE = 100 #amount of coolums for the first line 
 
 
 def create_testfiles():
@@ -12,8 +14,6 @@ def create_testfiles():
         for j in range (cols):
             arr[i][j]=j+(cols*i)+1
 
-
-
     #mix the array
     for i in range(sw_rounds):
         rn_row_1=random.randint(0, rows-1)
@@ -25,20 +25,21 @@ def create_testfiles():
         arr[rn_row_2][rn_col_2]=tmp
 
 
+  ###### write the first part of values to the pre csv
     for i in range(rows): # Threads
         for j in range((int)(cols/2)): # Actions
-            pre.write(str(arr[i][j]) + ",")
+            pre.write(str(arr[i][j]))
+            if(j<((int)(cols/2)-1)):
+                pre.write(",")
         pre.write("\n")
 
 
-
-
-    ######Post file, negate the 2nd part of the array afterwards   
+    ###### makes the first part of the array negative
     for i in range(rows): # Threads
-        for j in range((int)(cols/2),cols): # Actions
-            # post.write(str(arr[i][j]) + ",")
+        for j in range((int)(cols/2)): # Actions
             arr[i][j]=-arr[i][j]
-        # post.write("\n")
+           
+
 
 
     #mix the array
@@ -51,17 +52,24 @@ def create_testfiles():
         arr[rn_row_1][rn_col_1 ] = arr[rn_row_2][rn_col_2]
         arr[rn_row_2][rn_col_2]=tmp
 
+    # write values to the main csv
     for i in range(rows): # Threads
         for j in range((int)(cols)): # Actions
-            main.write(str(-arr[i][j]) + ",")
+            main.write(str(arr[i][j]))
+            if(j<(cols-1)):
+                main.write(",")
         main.write("\n")
 
+#main function
+print ("start")
+
 for i in range(FILE_AMOUNT):
-    pre_file="pre{0}.txt".format(i)
-    main_file="main{0}.txt".format(i)
+    pre_file="pre{0}.csv".format(i)
+    main_file="main{0}.csv".format(i)
     pre = open(pre_file,"w")
     main = open(main_file,"w")
-    # post = open("post.txt","w")
 
-    rows, cols = (100*(i+1), 100*(i+1)) 
+
+    rows, cols = (RAW_BASE*(i+1), COOLUMS_BASE*(i+1)) 
     create_testfiles()
+print("finish")

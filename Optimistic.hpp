@@ -1,3 +1,11 @@
+/** @file Optimistic.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Optimistic list based set, where the datastructure search a element without locking.
+ * If the node is found, the current and the previous node get locked and than the reachability of the two nodes from the head gets checked.
+ * Without memory management  
+ */
 #ifndef OPTIMISTIC_H__
 #define OPTIMISTIC_H__
 #include <iostream>
@@ -6,7 +14,6 @@ using namespace std;
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
-
 #include "Window.hpp"
 #include "setlist.hpp"
 

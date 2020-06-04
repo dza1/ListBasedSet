@@ -22,7 +22,7 @@
         {
             "type": "shell",
             "label": "create testcases",
-            "command": "cd testcases && python3 permutations.py",
+            "command": "cd testcases && rm $(ls |grep \"main[0-9]\\+.csv\") ;rm $(ls |grep \"pre[0-9]\\+.csv\") ; python3 permutations.py",
         }
     ]
 }

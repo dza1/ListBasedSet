@@ -1,3 +1,9 @@
+/** @file Lock_free_impr.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Lockfree list based set, with improvement for linkout nodes without memory management.
+ */
 #ifndef LOCKFREE_impr_H__
 #define LOCKFREE_impr_H__
 #include <iostream>
@@ -6,16 +12,12 @@ using namespace std;
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
-
 #include "setlist.hpp"
 #include "Window.hpp"
-
 #include <memory>
 
 #define FLAG_POS 63
 #define MASK 1ULL<<FLAG_POS
-
-
 
 
 template <typename T> class LockFree_impr : public SetList<T> { // The class

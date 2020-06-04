@@ -1,3 +1,11 @@
+/** @file Optimistic_mem.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Optimistic list based set, where the datastructure search a element without locking.
+ * If the node is found, the current and the previous node get locked and than the reachability of the two nodes from the head gets checked  
+ * With memory management  
+ */
 #ifndef OPTIMISTIC_MEM_H__
 #define OPTIMISTIC_MEM_H__
 #include <iostream>
@@ -6,9 +14,11 @@ using namespace std;
 #include <mutex> // std::mutex, std::lock_guard
 #include <omp.h>
 #include <stdint.h>
-
+#include <queue>
 #include "Window.hpp"
 #include "setlist.hpp"
+
+
 
 template <typename T> class Optimistic_mem : public SetList<T> { // The class
   private:
@@ -32,14 +42,6 @@ template <typename T> class Optimistic_mem : public SetList<T> { // The class
 	void emptyQueue(bool final); // not used
 };
 
-template <typename T> class node_fine_del { // The class
-  private:
-	nodeFine<T> *pointer;
 
-  public:
-	node_fine_del(nodeFine<T> *pointer, std::atomic<uint32_t> *snap, size_t T_max);
-	~node_fine_del();
-	uint32_t *snap;
-};
 
 #endif

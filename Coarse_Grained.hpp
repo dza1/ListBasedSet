@@ -1,3 +1,9 @@
+/** @file Coarse_Grained.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief list based set, which locks the whole datastructure, when it is reading or writing on it
+ */
 #ifndef COARSE_GRAINED_H__
 #define COARSE_GRAINED_H__
 #include <iostream>

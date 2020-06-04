@@ -2,10 +2,10 @@
  * @author Daniel Zainzinger
  * @date 2.6.2020
  *
- * @brief Header for list based set, which is lockfree with included memory management. 
+ * @brief Lockfree list based set, with improvement for linkout nodes with memory management.
  */
 #ifndef LOCKFREE_IMPR_MEM_H__
-#define LOCKFREE_impr_mem_H__
+#define LOCKFREE_IMPR_MEM_H__
 #include <iostream>
 using namespace std;
 #include "node.hpp"
@@ -40,14 +40,6 @@ template <typename T> class LockFree_impr_mem : public SetList<T> { // The class
 	void emptyQueue(bool final);
 };
 
-template <typename T> class node_atomic_del { // The class
-  private:
-	nodeAtom<T> *pointer;
 
-  public:
-	node_atomic_del(nodeAtom<T> *pointer, std::atomic<uint32_t> *snap, size_t T_max);
-	~node_atomic_del();
-	uint32_t *snap;
-};
 
 #endif

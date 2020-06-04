@@ -1,4 +1,9 @@
-
+/** @file key.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Calculate the key for an item which is necessary to stor it in a set
+ */
 #ifndef KEY_H__
 #define KEY_H__
 #include <iostream>

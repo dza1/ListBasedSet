@@ -1,3 +1,9 @@
+/** @file Lock_free.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Lockfree list based set, without memory management.
+ */
 #ifndef LOCKFREE_H__
 #define LOCKFREE_H__
 #include <iostream>

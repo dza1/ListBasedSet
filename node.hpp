@@ -1,11 +1,17 @@
+/** @file node.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief nodes for the datastructure and the delete queue
+ */
 #ifndef NODE_H__
 #define NODE_H__
 #include <atomic>
-#include <mutex> // std::mutex, std::lock_guard
+#include <mutex> 
 #include <stdint.h>
 
+/////////////////////////node for inheritance/////////////////////////////
 template <typename T> class node_virt {
-
   public:
 	int32_t key;
 	T item;
@@ -14,6 +20,7 @@ template <typename T> class node_virt {
 	// std::atomic<int> cnt;
 };
 
+/////////////////////////node/////////////////////////////
 template <typename T> class node : public node_virt<T> {
 
   public:
@@ -21,6 +28,7 @@ template <typename T> class node : public node_virt<T> {
 	node *next = nullptr;
 };
 
+/////////////////////////nodeFine/////////////////////////////
 template <typename T> class nodeFine : public node_virt<T> {
   private:
 	std::mutex mtx;
@@ -32,24 +40,25 @@ template <typename T> class nodeFine : public node_virt<T> {
 	void unlock();
 };
 
-template <typename T> class nodeAtom {
+/////////////////////////node_del/////////////////////////////
+template <typename T> class node_del { // The class
   private:
+	T *pointer;
+
   public:
-  	int32_t key;
-	T item;
-	std::atomic<int64_t> hash_mem{0};
-	std::atomic<nodeAtom<T> *> next{NULL};
-	nodeAtom(T item);
-	nodeAtom(T item, int32_t key);
+	node_del(T *pointer, std::atomic<uint32_t> *snap, size_t T_max);
+	~node_del();
+	uint32_t *snap;
 };
 
-template <typename T> class nodeFine_mem : public nodeFine<T> {
+/////////////////////////nodeAtom/////////////////////////////
+template <typename T> class nodeAtom : public node_virt<T> {
   private:
   public:
-	std::atomic<int64_t> hash_mem{0};
-	nodeFine_mem *next = nullptr;
-	nodeFine_mem(T item);
-	nodeFine_mem(T item, int32_t key);
+	using node_virt<T>::node_virt;
+	std::atomic<nodeAtom<T> *> next{NULL};
 };
+
+
 
 #endif

@@ -1,3 +1,9 @@
+/** @file Fine_Grained.hpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief list based set, which locks node, when it is reading or writing on it
+ */
 #ifndef FINE_GRAINED_H__
 #define FINE_GRAINED_H__
 #include <iostream>

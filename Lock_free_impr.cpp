@@ -1,3 +1,9 @@
+/** @file Lock_free_impr.cpp
+ * @author Daniel Zainzinger
+ * @date 2.6.2020
+ *
+ * @brief Lockfree list based set, with improvement for linkout nodes without memory management.
+ */
 #include <iostream>
 using namespace std;
 #include "Lock_free_impr.hpp"
@@ -8,11 +14,17 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 
+/**
+ * @brief Constructor for the datastructure
+ */
 template <class T> LockFree_impr<T>::LockFree_impr() {
 	head = new nodeAtom<T>(0, INT32_MIN);
 	head->next = new nodeAtom<T>(0, INT32_MAX);
 }
 
+/**
+ * @brief Destructor for the datastructure
+ */
 template <class T> LockFree_impr<T>::~LockFree_impr() {
 	while (head != NULL) {
 		nodeAtom<T> *oldHead = head;
@@ -21,6 +33,13 @@ template <class T> LockFree_impr<T>::~LockFree_impr() {
 	}
 }
 
+/**
+ * @brief Function which adds one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be add to the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully added, false otherwise
+ */
 template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeAtom<T>> w;
 	int32_t key = key_calc<T>(item);
@@ -39,7 +58,6 @@ template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark
 			// Add item to the set
 			nodeAtom<T> *n = new nodeAtom<T>(item);
 			n->next.store(w.curr);
-			// n->next.store(resetFlag(&n->next.load()));
 			resetFlag(&n->next);
 
 			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == true) {
@@ -63,6 +81,13 @@ template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark
 	}
 }
 
+/**
+ * @brief Function which removes one item from the datastructure
+ *
+ * @param[in]  	item  		item, which should be removed from the datastructure
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if it was succeccfully removed, false otherwise
+ */
 template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeAtom<T>> w;
 	try {
@@ -77,7 +102,6 @@ template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchM
 
 				setFlag(&markedsucc);
 				resetFlag(&succ);
-				// delete w.curr;
 
 				// mark as deleted
 				if (atomic_compare_exchange_weak(&w.curr->next, &succ, markedsucc) == false) {
@@ -105,6 +129,13 @@ template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchM
 	}
 }
 
+/**
+ * @brief Function which checks if the item is in the datastructure 
+ *
+ * @param[in]  	item  		item for check if it is included
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ * @return true, if item is in the datastructure, false otherwise 
+ */
 template <class T> bool LockFree_impr<T>::contains(T item, sub_benchMark_t *benchMark) {
 	nodeAtom<T> *n = head;
 
@@ -115,6 +146,13 @@ template <class T> bool LockFree_impr<T>::contains(T item, sub_benchMark_t *benc
 	return n->key == key && !getFlag(n->next.load());
 }
 
+/**
+ * @brief Function which returns a window, where the key is of the first element is smaller than the key of the item,
+ * and the second key bigger or equal. 
+ *
+ * @param[in]  	item  		item, from which the key is calculated to search the window 
+ * @param[out]  benchMark  	a struct, which stores information for benchmarking
+ */
 template <class T> Window_t<nodeAtom<T>> LockFree_impr<T>::find(T item, sub_benchMark_t *benchMark) {
 
 	nodeAtom<T> *pred, *curr, *old;
@@ -138,7 +176,7 @@ retry:
 
 				//  link out curr, not possible when pred is flaged
 				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
-					if (getFlag(old->next) == false && pred != old) { 
+					if (getFlag(old->next) == false && pred != old) {  // improvement
 						pred = old;
 						curr = getPointer(pred->next);
 						succ = getPointer(curr->next);
@@ -161,11 +199,22 @@ retry:
 	}
 }
 
+/**
+ * @brief Function return pointer without a flag
+ *
+ * @param	[in]  pointer  	pointer to the node with flag included
+ * @return 	pointer without flag
+ */
 template <class T> nodeAtom<T> *LockFree_impr<T>::getPointer(nodeAtom<T> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer;
 	return (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
+/**
+ * @brief Function set flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr<T>::setFlag(nodeAtom<T> **pointer) {
 	// cout <<endl <<"Pointer: "<<*pointer <<" ";
 	uint64_t u64_ptr = (uint64_t)*pointer;
@@ -173,19 +222,34 @@ template <class T> void LockFree_impr<T>::setFlag(nodeAtom<T> **pointer) {
 	// cout <<*pointer <<" "<<u64_ptr << endl;
 }
 
+/**
+ * @brief Function reset flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr<T>::resetFlag(nodeAtom<T> **pointer) {
 	uint64_t u64_ptr = (uint64_t)*pointer;
 	*pointer = (nodeAtom<T> *)(u64_ptr &= ~(MASK));
 }
 
+/**
+ * @brief Function reset flag, which mark the node for delete (overloaded)
+ *
+ * @param	[in,out]  pointer  	pointer to the node
+ */
 template <class T> void LockFree_impr<T>::resetFlag(atomic<nodeAtom<T> *> *pointer) {
 	uint64_t u64_ptr = (uint64_t)pointer->load();
 	pointer->store((nodeAtom<T> *)(u64_ptr &= ~(MASK)));
 }
 
+/**
+ * @brief Function return if node is marked for delete
+ *
+ * @param	[in]  pointer  	pointer to the node
+ * @return 	flag, if node is marded for delete
+ */
 template <class T> bool LockFree_impr<T>::getFlag(nodeAtom<T> *pointer) {
 	return (nodeAtom<int> *)((((uint64_t)pointer) >> FLAG_POS) & 1U);
 }
 
 template class LockFree_impr<int>;
-// template class LockFree_impr<float>;

@@ -2,7 +2,7 @@
  * @author Daniel Zainzinger
  * @date 2.6.2020
  *
- * @brief List based set, which is lockfree with included memory management. 
+ * @brief Lockfree list based set, with improvement for linkout nodes with memory management.
  */
 #include <iostream>
 using namespace std;
@@ -19,7 +19,8 @@ using namespace std;
 #define FLAG_POS 63
 #define MASK 1ULL << FLAG_POS
 
-static thread_local queue<node_atomic_del<int> *> deleteQueue;
+//queue to store the candidats for delete
+static thread_local queue<void *> deleteQueue;
 
 /**
  * @brief Constructor for the datastructure
@@ -30,7 +31,6 @@ template <class T> LockFree_impr_mem<T>::LockFree_impr_mem() {
 
 	Tmax = omp_get_max_threads();
 	snap = new std::atomic<uint32_t>[Tmax];
-	// std::fill(snap, snap + Tmax * sizeof(uint32_t), 0);
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);
 	}
@@ -49,7 +49,7 @@ template <class T> LockFree_impr_mem<T>::~LockFree_impr_mem() {
 }
 
 /**
- * @brief Function which removes one item from the datastructure
+ * @brief Function which adds one item from the datastructure
  *
  * @param[in]  	item  		item, which should be add to the datastructure
  * @param[out]  benchMark  	a struct, which stores information for benchmarking
@@ -74,9 +74,9 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 			// Add item to the set
 			nodeAtom<T> *n = new nodeAtom<T>(item);
 			n->next.store(w.curr);
-			// n->next.store(resetFlag(&n->next.load()));
 			resetFlag(&n->next);
 			if (atomic_compare_exchange_strong(&pred->next, &curr, n) == false) { // include node
+				//delete the new node, if it was not possible to add
 				delete n;
 				benchMark->goToStart += 1;
 				continue;
@@ -84,17 +84,14 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 			emptyQueue(false);
 			return true;
 		}
-
 	}
 
 	// Exception handling
 	catch (exception &e) {
-
 		cerr << "Error during add the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-
 		cerr << "Error during add the item: " << item << std::endl;
 		return false;
 	}
@@ -132,7 +129,7 @@ template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *be
 				// try to unlink
 				if (atomic_compare_exchange_strong(&w.pred->next, &w.curr, succ) == true) {
 
-					deleteQueue.push(new node_atomic_del<T>(w.curr, this->snap, this->Tmax));
+					deleteQueue.push(new node_del<nodeAtom<T>>(w.curr, this->snap, this->Tmax));
 				}
 				emptyQueue(false);
 				return true;
@@ -213,7 +210,7 @@ retry:
 					goto retry;
 				}
 				deleteQueue.push(
-					new node_atomic_del<T>(curr, this->snap, this->Tmax)); // put in de que for delete candidats
+					new node_del<nodeAtom<T>>(curr, this->snap, this->Tmax)); // put in de que for delete candidats
 				curr = succ;
 				succ = getPointer(succ->next.load());
 			}
@@ -294,11 +291,13 @@ template <class T> bool LockFree_impr_mem<T>::getFlag(nodeAtom<T> *pointer) {
  */
 template <class T> void LockFree_impr_mem<T>::emptyQueue(bool final) {
 	int tid = omp_get_thread_num();
+	/* get the total number of threads available in this parallel region */
+	size_t NPR = omp_get_num_threads();
 	while (deleteQueue.empty() == false) {
-		node_atomic_del<T> *curr = deleteQueue.front();
+		node_del<nodeAtom<T>> *curr = static_cast<node_del<nodeAtom<T>>*> (deleteQueue.front());
 		snap[tid]++;
 		if (final == false) {
-			for (size_t i = 0; i < this->Tmax; i++) {
+			for (size_t i = 0; i < NPR; i++) {
 				if (curr->snap[i] == this->snap[i].load()) {
 					return;
 				}
@@ -311,30 +310,6 @@ template <class T> void LockFree_impr_mem<T>::emptyQueue(bool final) {
 }
 
 
-/**
- * @brief Constructor for create a node with a canidate for delete
- *
- * @param[in]  pointer  	Pointer to the node which should be deleted
- * @param[in]  snap  		snapshot of all timestamp, when the node was put in the queue
- * @param[in]  Tmax  		Amount of maximal threads
- */
-template <class T> node_atomic_del<T>::node_atomic_del(nodeAtom<T> *pointer, std::atomic<uint32_t> *snap, size_t Tmax) {
-	this->pointer = pointer;
-	this->snap = new uint32_t[Tmax];
-	// std::memcpy(this->snap, snap, T_max * sizeof(uint32_t));
-	for (size_t i = 0; i < Tmax; i++) {
-		this->snap[i] = snap[i].load();
-	}
-}
 
-/**
- * @brief Destructor for node with a canidate for delete
- *
- */
-template <class T> node_atomic_del<T>::~node_atomic_del() {
-	delete pointer;
-	delete[] snap;
-}
 
 template class LockFree_impr_mem<int>;
-template class node_atomic_del<int>;
