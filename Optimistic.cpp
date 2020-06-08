@@ -71,12 +71,12 @@ template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }
@@ -107,12 +107,12 @@ template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }
@@ -141,12 +141,12 @@ template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMa
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }

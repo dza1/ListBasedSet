@@ -77,13 +77,13 @@ template <class T> bool FineList<T>::add(T item, sub_benchMark_t *benchMark) {
 	catch (exception &e) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }
@@ -127,13 +127,13 @@ template <class T> bool FineList<T>::remove(T item, sub_benchMark_t *benchMark) 
 	catch (exception &e) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		return false;
 	}
 }
@@ -175,13 +175,13 @@ template <class T> bool FineList<T>::contains(T item, sub_benchMark_t *benchMark
 	catch (exception &e) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		return false;
 	}
 }

@@ -88,11 +88,11 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
 
 	// Exception handling
 	catch (exception &e) {
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }
@@ -141,12 +141,12 @@ template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *be
 	}
 	// Exception handling
 	catch (exception &e) {
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }

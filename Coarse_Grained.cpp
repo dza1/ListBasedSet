@@ -72,12 +72,12 @@ template <class T> bool CoarseList<T>::add(T item,sub_benchMark_t *benchMark) {
 	// Exception handling
 	catch (exception &e) {
 		mtx.unlock();
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		mtx.unlock();
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
 }
@@ -115,12 +115,12 @@ template <class T> bool CoarseList<T>::remove(T item, sub_benchMark_t *benchMark
 	// Exception handling
 	catch (exception &e) {
 		mtx.unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		mtx.unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		return false;
 	}
 }
@@ -156,12 +156,12 @@ template <class T> bool CoarseList<T>::contains(T item, sub_benchMark_t *benchMa
 	// Exception handling
 	catch (exception &e) {
 		mtx.unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		mtx.unlock();
-		cerr << "Error during remove the item: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		return false;
 	}
 }

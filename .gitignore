@@ -4,3 +4,11 @@ main
 *.txt
 main
 *.csv
+
+*.aux
+*.fdb*
+*.fls
+*.log
+*.out
+*.gz
+*.toc
