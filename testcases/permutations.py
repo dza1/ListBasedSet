@@ -1,8 +1,7 @@
 import random
-import os
 
 FILE_AMOUNT = 1
-RAW_BASE = 100 #amount of lines for the first file
+RAW_BASE = 1000 #amount of lines for the first file
 COOLUMS_BASE = 100 #amount of coolums for the first line 
 
 
@@ -40,8 +39,6 @@ def create_testfiles():
             arr[i][j]=-arr[i][j]
            
 
-
-
     #mix the array
     for i in range(sw_rounds):
         rn_row_1=random.randint(0, rows-1)
@@ -68,8 +65,7 @@ for i in range(FILE_AMOUNT):
     main_file="main{0}.csv".format(i)
     pre = open(pre_file,"w")
     main = open(main_file,"w")
-
-
     rows, cols = (RAW_BASE*(i+1), COOLUMS_BASE*(i+1)) 
     create_testfiles()
+    
 print("finish")

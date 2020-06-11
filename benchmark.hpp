@@ -9,28 +9,30 @@
 
 #include <stdint.h>
 
-#define REPEAT_TESTS 2		//Amount of iterations for each test
+#define REPEAT_TESTS 1 // Amount of iterations for each test
 
-//empty sub_benchMark_t struct
+// empty sub_benchMark_t struct
 #define SUB_BENCHMARK_E                                                                                                \
-	{ 0, 0 ,0}
+	{ 0, 0, 0, 0 }
 
-//empty benchMark_t struct
+// empty benchMark_t struct
 #define BENCHMARK_E                                                                                                    \
 	{ SUB_BENCHMARK_E, SUB_BENCHMARK_E, SUB_BENCHMARK_E }
 
-#define BENCHM_TO_CSV(file, name, str, testSizePre, testSizeMain)                                                                          \
-	(file << name << "," << str.main.cores << "," << testSizePre << ","<<testSizeMain<<',' << str.pre.time << "," << str.pre.goToStart << ","     \
-		  << str.main.time << "," << str.main.goToStart << "," << str.check.time << "," << str.check.goToStart         \
-		  << endl)
+#define BENCHM_TO_CSV(file, name, str, testSizePre, testSizeMain)                                                      \
+	(file << name << "," << str.main.cores << "," << testSizePre << "," << testSizeMain << ',' << str.pre.time << ","  \
+		  << str.pre.goToStart << "," << (double)str.pre.lostTime / 1000000 << "," << str.main.time << ","             \
+		  << str.main.goToStart << "," << (double)str.main.lostTime / 1000000 << "," << str.check.time << ","          \
+		  << str.check.goToStart << "," << (double)str.check.lostTime / 1000000 << endl)
 
 #define WRITE_HEADER(file)                                                                                             \
-	file << "Art of list,cores,TestSizePre,TestSizeMain,time write,goToStart write,time mixed,goToStart mixed,time check,goToStart "   \
-			"check \n"
-
+	file << "Art of list,cores,TestSizePre,TestSizeMain,time write,goToStart write,lostTime write,time "               \
+			"mixed,goToStart mixed,lostTime mixed,time check,goToStart check,"                                         \
+			"lostTime check\n"
 
 struct sub_benchMark_t {
 	uint32_t goToStart;
+	uint32_t lostTime;
 	uint16_t time;
 	uint16_t cores;
 };

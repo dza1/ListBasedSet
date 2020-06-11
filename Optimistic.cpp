@@ -15,6 +15,7 @@ using namespace std;
 #include <omp.h>
 #include <stdint.h>
 #include "benchmark.hpp"
+#include <chrono>
 
 /**
  * @brief Constructor for the datastructure
@@ -107,12 +108,12 @@ template <class T> bool Optimistic<T>::remove(T item, sub_benchMark_t *benchMark
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during remove the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during remove the item: " << item << std::endl;
 		return false;
 	}
 }
@@ -141,12 +142,12 @@ template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMa
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during check the item: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add the item: " << item << std::endl;
+		cerr << "Error during check the item: " << item << std::endl;
 		return false;
 	}
 }
@@ -160,6 +161,8 @@ template <class T> bool Optimistic<T>::contains(T item, sub_benchMark_t *benchMa
  */
 template <class T> Window_t<nodeFine<T>> Optimistic<T>::find(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
+	std::chrono::_V2::system_clock::time_point resetTime;
+	bool reset=false; //is true, if there was a reset and we have to start again from the beginning
 	int32_t key = key_calc(item);
 	// lock_guard<std::mutex> g(mtx);
 	while (true) {
@@ -171,6 +174,13 @@ template <class T> Window_t<nodeFine<T>> Optimistic<T>::find(T item, sub_benchMa
 			pred = curr;
 			curr = curr->next;
 		}
+		if(reset==true){
+			auto finishTime = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = finishTime - resetTime;
+			uint32_t mus = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+			benchMark->lostTime+=mus;
+			reset=false;
+		}
 		Window_t<nodeFine<T>> w{pred, curr};
 		lock(w);
 		assert(w.pred->key <= key);
@@ -180,6 +190,8 @@ template <class T> Window_t<nodeFine<T>> Optimistic<T>::find(T item, sub_benchMa
 		} else { // not reachable
 			unlock(w);
 			benchMark->goToStart+=1;
+			resetTime = chrono::high_resolution_clock::now();
+			reset=true;
 		}
 	}
 }
