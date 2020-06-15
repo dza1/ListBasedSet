@@ -19,13 +19,13 @@ template <typename T> class Lazy : public SetList<T> { // The class
   private:
 	T item;
 	std::mutex mtx;
-	Window_t<nodeFine<T>> find(T item, sub_benchMark_t *benchMark);
-	void lock(Window_t<nodeFine<T>> w);
-	void unlock(Window_t<nodeFine<T>> w);
-	bool validate(Window_t<nodeFine<T>> w);
+	Window_t<nodeLazy<T>> find(T item, sub_benchMark_t *benchMark);
+	void lock(Window_t<nodeLazy<T>> w);
+	void unlock(Window_t<nodeLazy<T>> w);
+	bool validate(Window_t<nodeLazy<T>> w);
 
   public:
-	nodeFine<T> *head;
+	nodeLazy<T> *head;
 	Lazy();
 	~Lazy();
 	bool add(T item, sub_benchMark_t *benchMark);

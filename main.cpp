@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 			BENCHM_TO_CSV(outFile, "Lazy", benchMark, testSizePre, testSizeMain);
 
 			////////////////////// Lazy_mem /////////////////////
-			cout << white << "Lazy_mem:" << endl;
+			/*cout << white << "Lazy_mem:" << endl;
 			for (size_t i = 0; i < REPEAT_TESTS; i++) {
 				list = new Lazy_mem<int>();
 				cout << "Pre: ";
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
 			}
 			benchMark = BENCHMARK_E;
 			averBenchm(benchMark_arr, &benchMark);
-			BENCHM_TO_CSV(outFile, "Lazy_mem", benchMark, testSizePre, testSizeMain);
+			BENCHM_TO_CSV(outFile, "Lazy_mem", benchMark, testSizePre, testSizeMain);*/
 
 			////////////////////// LockFree /////////////////////
 			cout << white << "LockFree:" << endl;

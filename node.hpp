@@ -40,6 +40,14 @@ template <typename T> class nodeFine : public node_virt<T> {
 	void unlock();
 };
 
+/////////////////////////nodeFine/////////////////////////////
+template <typename T> class nodeLazy : public nodeFine<T> {
+  public:
+	using nodeFine<T>::nodeFine;
+	nodeLazy *next = nullptr;
+	bool marked = false;
+};
+
 /////////////////////////node_del/////////////////////////////
 template <typename T> class node_del { // The class
   private:

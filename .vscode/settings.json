@@ -78,7 +78,9 @@
 		"__tuple": "cpp",
 		"ios": "cpp",
 		"locale": "cpp",
-		"stack": "cpp"
+		"stack": "cpp",
+		"bit": "cpp",
+		"random": "cpp"
 	},
 	"cSpell.enableFiletypes": [
 		"cpp",
