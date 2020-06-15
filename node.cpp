@@ -83,6 +83,8 @@ template <class T> node_del<T>::~node_del() {
 
 template class node_virt<int>;
 template class nodeFine<int>;
+template class nodeLazy<int>;
 template class node_del<nodeFine<int>>;
+template class node_del<nodeLazy<int>>;
 template class node_del<nodeAtom<int>>;
 template class nodeAtom<int>;

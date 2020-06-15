@@ -25,8 +25,8 @@ static thread_local queue<void*> deleteQueue;
  * @brief Constructor for the datastructure
  */
 template <class T> Lazy_mem<T>::Lazy_mem() {
-	head = new nodeFine<T>(0, INT32_MIN);
-	head->next = new nodeFine<T>(0, INT32_MAX);
+	head = new nodeLazy<T>(0, INT32_MIN);
+	head->next = new nodeLazy<T>(0, INT32_MAX);
 
 	Tmax = omp_get_max_threads();
 	snap = new std::atomic<uint32_t>[Tmax];
@@ -40,7 +40,7 @@ template <class T> Lazy_mem<T>::Lazy_mem() {
  */
 template <class T> Lazy_mem<T>::~Lazy_mem() {
 	while (head != NULL) {
-		nodeFine<T> *oldHead = head;
+		nodeLazy<T> *oldHead = head;
 		head = head->next;
 		delete oldHead;
 	}
@@ -55,29 +55,37 @@ template <class T> Lazy_mem<T>::~Lazy_mem() {
  * @return true, if it was succeccfully added, false otherwise
  */
 template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
-	Window_t<nodeFine<T>> w;
+	nodeLazy<T> *pred, *curr;
+	Window_t<nodeLazy<T>> w;
 	try {
-		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
+		head->lock();
+		pred = head;
+		curr = pred->next;
+		curr->lock();
+
+		while (curr->key < key) {
+			assert(curr->next != NULL);
+			pred->unlock();
+			pred = curr;
+			curr = curr->next;
+			curr->lock();
+		}
 
 		// Item already in the set
-		if (key == w.curr->key) {
-			unlock(w);
+		if (key == curr->key) {
+			pred->unlock();
+			curr->unlock();
 			emptyQueue(false);
 			return false;
 		}
 
 		// Add item to the set
-		nodeFine<T> *n = new nodeFine<T>(item);
-		if (w.pred->key >= n->key) {
-			printf("Error");
-		}
-		n->next = w.curr;
-		w.pred->next = n;
-
-		assert(w.pred->key < n->key);
-		assert(n->key < w.curr->key);
-		unlock(w);
+		nodeLazy<T> *n = new nodeLazy<T>(item);
+		n->next = curr;
+		pred->next = n;
+		pred->unlock();
+		curr->unlock();
 		emptyQueue(false);
 		return true;
 	}
@@ -103,23 +111,24 @@ template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
  * @return true, if it was succeccfully removed, false otherwise
  */
 template <class T> bool Lazy_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
-	Window_t<nodeFine<T>> w;
+	Window_t<nodeLazy<T>> w;
 	try {
-		w = find(item,benchMark);
+				w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
 
-		if (key == w.curr->key) {
-			w.pred->next = w.curr->next;
+		if (key != w.curr->key) {
 			unlock(w);
-			//put th unlinked node in the queue to delete
-			deleteQueue.push(new node_del<nodeFine<T>>(w.curr, this->snap, this->Tmax));
-			emptyQueue(false);
-			return true;
-		} else {
-			unlock(w);
+
 			emptyQueue(false);
 			return false;
 		}
+
+		w.curr->marked = true;
+		w.pred->next =
+		 w.curr->next;
+		unlock(w);
+		emptyQueue(false);
+		return true;
 	}
 	// Exception handling
 	catch (exception &e) {
@@ -142,29 +151,21 @@ template <class T> bool Lazy_mem<T>::remove(T item, sub_benchMark_t *benchMark) 
  * @return true, if item is in the datastructure, false otherwise 
  */
 template <class T> bool Lazy_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
-	Window_t<nodeFine<T>> w;
-	try {
-		w = find(item,benchMark);
-		int32_t key = key_calc<T>(item);
+	int32_t key = key_calc(item);
 
-		if (key == w.curr->key) {
-			unlock(w);
-			emptyQueue(false);
-			return true;
-		} else {
-			unlock(w);
-			emptyQueue(false);
-			return false;
-		}
+	try {
+		nodeLazy<T> *n = head;
+
+		while(n->key < key) {n = n->next;}
+
+		return n->key == key && !n->marked;
 	}
 	// Exception handling
 	catch (exception &e) {
-		unlock(w);
 		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		unlock(w);
 		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
@@ -177,28 +178,41 @@ template <class T> bool Lazy_mem<T>::contains(T item, sub_benchMark_t *benchMark
  * @param[in]  	item  		item, from which the key is calculated to search the window 
  * @param[out]  benchMark  	a struct, which stores information for benchmarking
  */
-template <class T> Window_t<nodeFine<T>> Lazy_mem<T>::find(T item, sub_benchMark_t *benchMark) {
-	nodeFine<T> *pred, *curr;
+template <class T> Window_t<nodeLazy<T>> Lazy_mem<T>::find(T item, sub_benchMark_t *benchMark) {
+	nodeLazy<T> *pred, *curr;
+	std::chrono::_V2::system_clock::time_point resetTime;
+	bool reset=false;
 	int32_t key = key_calc(item);
+	
 	while (true) {
 		pred = head;
-		curr = head->next;
+		curr = pred->next;
 
-		while (curr->key < key) {
-			assert(curr->next != NULL);
+		while (curr->key < key)
+		{
 			pred = curr;
 			curr = curr->next;
 		}
+		if(reset==true){
+			auto finishTime = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = finishTime - resetTime;
+			uint32_t mus = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+			benchMark->lostTime+=mus;
+			reset=false;
+		}
 
-		Window_t<nodeFine<T>> w{pred, curr};
+		Window_t<nodeLazy<T>> w{pred, curr};
 		lock(w);
 		assert(w.pred->key <= key);
 		assert(w.curr->key >= key);
+
 		if (validate(w) == true) {
 			return w;
 		} else { // not reachable
 			unlock(w);
 			benchMark->goToStart+=1;
+			resetTime = chrono::high_resolution_clock::now();
+			reset=true;
 		}
 	}
 }
@@ -209,16 +223,8 @@ template <class T> Window_t<nodeFine<T>> Lazy_mem<T>::find(T item, sub_benchMark
  * @param[in]  	w	  		window, which includes two nodes
  * @return true, if both nodes are still reachable from the head, otherwise false
  */
-template <class T> bool Lazy_mem<T>::validate(Window_t<nodeFine<T>> w) {
-	nodeFine<T> *n = head;
-	while (n->key <= w.pred->key) {
-		assert(n->next != NULL);
-		if (n == w.pred) {
-			return n->next == w.curr;
-		}
-		n = n->next;
-	}
-	return false;
+template <class T> bool Lazy_mem<T>::validate(Window_t<nodeLazy<T>> w) {
+	return !w.pred->marked && !w.curr->marked && w.pred->next == w.curr;
 }
 
 /**
@@ -226,7 +232,7 @@ template <class T> bool Lazy_mem<T>::validate(Window_t<nodeFine<T>> w) {
  *
  * @param[in]  	w 		window, which includes two nodes
  */
-template <class T> void Lazy_mem<T>::lock(Window_t<nodeFine<T>> w) {
+template <class T> void Lazy_mem<T>::lock(Window_t<nodeLazy<T>> w) {
 	w.pred->lock();
 	w.curr->lock();
 }
@@ -236,7 +242,7 @@ template <class T> void Lazy_mem<T>::lock(Window_t<nodeFine<T>> w) {
  *
  * @param[in]  	w  		window, which includes two nodes
  */
-template <class T> void Lazy_mem<T>::unlock(Window_t<nodeFine<T>> w) {
+template <class T> void Lazy_mem<T>::unlock(Window_t<nodeLazy<T>> w) {
 	w.pred->unlock();
 	w.curr->unlock();
 }
@@ -256,7 +262,7 @@ template <class T> void Lazy_mem<T>::emptyQueue(bool final) {
 	/* get the total number of threads available in this parallel region */
 	size_t NPR = omp_get_num_threads();
 	while (deleteQueue.empty() == false) {
-		node_del<nodeFine<T>> *curr = static_cast<node_del<nodeFine<T>>*>(deleteQueue.front());
+		node_del<nodeLazy<T>> *curr = static_cast<node_del<nodeLazy<T>>*>(deleteQueue.front());
 		snap[tid]++;
 		if (final == false) {
 			for (size_t i = 0; i < NPR; i++) {
