@@ -79,7 +79,6 @@ template <class T> bool LockFree<T>::add(T item, sub_benchMark_t *benchMark) {
 				reset = true;
 				continue;
 			}
-			benchMark->goToStart += 1;
 		}
 
 	}

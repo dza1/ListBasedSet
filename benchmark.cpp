@@ -7,7 +7,53 @@
  */
 #include "benchmark.hpp"
 #include "stdio.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <stdint.h>
+#include <string.h>
+#include <sys/stat.h>
+
+using namespace std;
+
+
+
+/**
+ * @brief Write results to the according file
+ * @details Create a folder with the name of the constant FOLDER_RESULT
+ *
+ * @param[in]   name[30]	  	name of the datastructure
+ * @param[in]  benchMark  		a struct, which stores information for benchmarking
+ * @param[in]  testSizePre 		amount of entries in the pre file
+ * @param[in]  testSizeMain		amount of entries in the main file
+ */
+int write_csv(const char name[30], benchMark_t benchMark, uint32_t testSizePre, uint32_t testSizeMain) {
+
+	mkdir(FOLDER_RESULT, 0770);
+	char fullName[40] = FOLDER_RESULT;
+	strcat(fullName, "/");	// append string two to the result.
+	strncat(fullName, name, 30); // append string two to the result.
+	strcat(fullName, ".csv");	// append string two to the result.
+
+	ifstream file_check(fullName);
+	ofstream outFile;
+	bool exist = file_check.is_open();
+
+	if (exist == true) {
+		file_check.close();
+	}
+	outFile.open(fullName, fstream::app);
+	if (outFile.is_open() == false) {
+		cerr << "Unable to open file" << endl;
+		return 0;
+	}
+	if (exist == false) {
+		WRITE_HEADER(outFile);
+	}
+	BENCHM_TO_CSV(outFile, benchMark, testSizePre, testSizeMain);
+	outFile.close();
+	return 1;
+}
 
 /**
  * @brief Calculates the average of repeated benchmark tests

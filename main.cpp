@@ -7,13 +7,13 @@
  */
 #include "Coarse_Grained.hpp"
 #include "Fine_Grained.hpp"
+#include "Lazy.hpp"
+#include "Lazy_mem.hpp"
 #include "Lock_free.hpp"
 #include "Lock_free_impr.hpp"
 #include "Lock_free_impr_mem.hpp"
 #include "Optimistic.hpp"
 #include "Optimistic_mem.hpp"
-#include "Lazy.hpp"
-#include "Lazy_mem.hpp"
 #include "benchmark.hpp"
 #include "stdio.h"
 #include "termcolor.hpp"
@@ -43,186 +43,198 @@ static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t
 int main(int argc, char *argv[]) {
 	benchMark_t benchMark;
 	benchMark_t benchMark_arr[REPEAT_TESTS];
-	ofstream outFile("Test_result.csv", fstream::app);
-	if (outFile.is_open()) {
-		WRITE_HEADER(outFile);
-		SetList<int> *list;
-		size_t testCnt = 0;
-		while (true) { // Read all available main and pre files
-			vector<vector<int>> testcases[2];
-			uint32_t testSizePre = 0;
-			uint32_t testSizeMain = 0;
-			char pre_file[20];
-			char main_file[20];
-			sprintf(pre_file, PRE_FILENAME, testCnt);
-			sprintf(main_file, MAIN_FILENAME, testCnt);
+	SetList<int> *list;
+	size_t testCnt = 0;
+	while (true) { // Read all available main and pre files
+		vector<vector<int>> testcases[2];
+		uint32_t testSizePre = 0;
+		uint32_t testSizeMain = 0;
+		char pre_file[20];
+		char main_file[20];
+		sprintf(pre_file, PRE_FILENAME, testCnt);
+		sprintf(main_file, MAIN_FILENAME, testCnt);
 
-			testSizePre = read_file(pre_file, &testcases[0]);
-			testSizeMain = read_file(main_file, &testcases[1]);
-			if (testSizePre == 0 || testSizeMain == 0) { // stop, if there is no file to read
-				break;
-			}
-			cout << blue << main_file << endl;
-
-			///////////////// CoarseList///////////////////////
-			cout << white << "CoarseList:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new CoarseList<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "CoarseList", benchMark,testSizePre,testSizeMain);
-
-			////////////////////// FineList /////////////////////
-			cout << white << "FineList:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new FineList<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "FineList", benchMark,testSizePre,testSizeMain);
-
-			////////////////////// Optimistic /////////////////////
-			cout << white << "Optimistic:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new Optimistic<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "Optimistic", benchMark,testSizePre,testSizeMain);
-
-			////////////////////// Optimistic_mem /////////////////////
-			cout << white << "Optimistic_mem:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new Optimistic_mem<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark = BENCHMARK_E;
-			averBenchm(benchMark_arr, &benchMark);
-			BENCHM_TO_CSV(outFile, "Optimistic_mem", benchMark, testSizePre, testSizeMain);
-
-			////////////////////// Lazy /////////////////////
-			cout << white << "Lazy:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new Lazy<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark = BENCHMARK_E;
-			averBenchm(benchMark_arr, &benchMark);
-			BENCHM_TO_CSV(outFile, "Lazy", benchMark, testSizePre, testSizeMain);
-
-			////////////////////// Lazy_mem /////////////////////
-			cout << white << "Lazy_mem:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new Lazy_mem<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark = BENCHMARK_E;
-			averBenchm(benchMark_arr, &benchMark);
-			BENCHM_TO_CSV(outFile, "Lazy_mem", benchMark, testSizePre, testSizeMain);
-
-			////////////////////// LockFree /////////////////////
-			cout << white << "LockFree:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new LockFree<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "LockFree", benchMark,testSizePre,testSizeMain);
-
-			////////////////////// LockFree_impr /////////////////////
-			cout << white << "LockFree_impr:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new LockFree_impr<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark=BENCHMARK_E;
-			averBenchm(benchMark_arr,&benchMark);
-			BENCHM_TO_CSV(outFile, "LockFree_impr", benchMark,testSizePre,testSizeMain);
-
-			////////////////////// LockFree_impr /////////////////////
-			cout << white << "LockFree_impr_mem:" << endl;
-			for (size_t i = 0; i < REPEAT_TESTS; i++) {
-				list = new LockFree_impr_mem<int>();
-				cout << "Pre: ";
-				benchMark_arr[i] = BENCHMARK_E;
-				runtest(testcases[0], list, &benchMark_arr[i].pre);
-				cout << "Main: ";
-				runtest(testcases[1], list, &benchMark_arr[i].main);
-				cout << "Check: ";
-				check(testcases[1], list, &benchMark_arr[i].check);
-				delete list;
-			}
-			benchMark = BENCHMARK_E;
-			averBenchm(benchMark_arr, &benchMark);
-			BENCHM_TO_CSV(outFile, "LockFree_impr_mem", benchMark, testSizePre, testSizeMain);
-
-			testCnt++;
+		testSizePre = read_file(pre_file, &testcases[0]);
+		testSizeMain = read_file(main_file, &testcases[1]);
+		if (testSizePre == 0 || testSizeMain == 0) { // stop, if there is no file to read
+			break;
 		}
-	} else {
-		cout << "Unable to open file to write the results";
+		cout << blue << main_file << endl;
+
+		///////////////// CoarseList///////////////////////
+		cout << white << "CoarseList:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new CoarseList<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("CoarseList", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// FineList /////////////////////
+		cout << white << "FineList:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new FineList<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("FineList", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// Optimistic /////////////////////
+		cout << white << "Optimistic:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new Optimistic<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("Optimistic", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// Optimistic_mem /////////////////////
+		cout << white << "Optimistic_mem:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new Optimistic_mem<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("Optimistic_mem", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// Lazy /////////////////////
+		cout << white << "Lazy:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new Lazy<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("Lazy", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// Lazy_mem /////////////////////
+		cout << white << "Lazy_mem:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new Lazy_mem<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("Lazy_mem", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// LockFree /////////////////////
+		cout << white << "LockFree:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new LockFree<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("LockFree", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// LockFree_impr /////////////////////
+		cout << white << "LockFree_impr:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new LockFree_impr<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("LockFree_impr", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		////////////////////// LockFree_impr /////////////////////
+		cout << white << "LockFree_impr_mem:" << endl;
+		for (size_t i = 0; i < REPEAT_TESTS; i++) {
+			list = new LockFree_impr_mem<int>();
+			cout << "Pre: ";
+			benchMark_arr[i] = BENCHMARK_E;
+			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			cout << "Main: ";
+			runtest(testcases[1], list, &benchMark_arr[i].main);
+			cout << "Check: ";
+			check(testcases[1], list, &benchMark_arr[i].check);
+			delete list;
+		}
+		benchMark = BENCHMARK_E;
+		averBenchm(benchMark_arr, &benchMark);
+		if (write_csv("LockFree_impr", benchMark, testSizePre, testSizeMain) == 0) {
+			break;
+		}
+
+		testCnt++;
 	}
-	outFile.close();
+
 	return 0;
 }
 

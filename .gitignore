@@ -12,3 +12,4 @@ main
 *.out
 *.gz
 *.toc
+**/result
