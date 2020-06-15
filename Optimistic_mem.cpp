@@ -3,25 +3,23 @@
  * @date 2.6.2020
  *
  * @brief Optimistic list based set, where the datastructure search a element without locking.
- * If the node is found, the current and the previous node get locked and than the reachability of the two nodes from the head gets checked  
- * With memory management  
+ * If the node is found, the current and the previous node get locked and than the reachability of the two nodes from
+ * the head gets checked With memory management
  */
 #include <iostream>
 using namespace std;
 #include "Optimistic_mem.hpp"
+#include "benchmark.hpp"
 #include "key.hpp"
 #include "node.hpp"
 #include <assert.h>
 #include <omp.h>
-#include <stdint.h>
-#include "benchmark.hpp"
 #include <queue>
+#include <stdint.h>
 #include <unordered_map>
 
-
-//queue to store the candidats for delete
-static thread_local queue<void*> deleteQueue;
-
+// queue to store the candidats for delete
+static thread_local queue<void *> deleteQueue;
 
 /**
  * @brief Constructor for the datastructure
@@ -56,10 +54,10 @@ template <class T> Optimistic_mem<T>::~Optimistic_mem() {
  * @param[out]  benchMark  	a struct, which stores information for benchmarking
  * @return true, if it was succeccfully added, false otherwise
  */
-template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark) {
+template <class T> bool Optimistic_mem<T>::add(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeFine<T>> w;
 	try {
-		w = find(item,benchMark);
+		w = find(item, benchMark);
 		int32_t key = key_calc<T>(item);
 
 		// Item already in the set
@@ -107,13 +105,13 @@ template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark
 template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeFine<T>> w;
 	try {
-		w = find(item,benchMark);
+		w = find(item, benchMark);
 		int32_t key = key_calc<T>(item);
 
 		if (key == w.curr->key) {
 			w.pred->next = w.curr->next;
 			unlock(w);
-			//put th unlinked node in the queue to delete
+			// put th unlinked node in the queue to delete
 			deleteQueue.push(new node_del<nodeFine<T>>(w.curr, this->snap, this->Tmax));
 			emptyQueue(false);
 			return true;
@@ -131,22 +129,22 @@ template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *bench
 		return false;
 	} catch (...) {
 		unlock(w);
+<<<<<<< HEAD
 		cerr << "Error during add: " << item << std::endl;
+=======
+		cerr << "Error during remove the item: " << item << std::endl;
 		return false;
-	}
-}
-
 /**
- * @brief Function which checks if the item is in the datastructure 
+ * @brief Function which checks if the item is in the datastructure
  *
  * @param[in]  	item  		item for check if it is included
  * @param[out]  benchMark  	a struct, which stores information for benchmarking
- * @return true, if item is in the datastructure, false otherwise 
+ * @return true, if item is in the datastructure, false otherwise
  */
 template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
 	Window_t<nodeFine<T>> w;
 	try {
-		w = find(item,benchMark);
+		w = find(item, benchMark);
 		int32_t key = key_calc<T>(item);
 
 		if (key == w.curr->key) {
@@ -167,20 +165,22 @@ template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *ben
 		return false;
 	} catch (...) {
 		unlock(w);
+<<<<<<< HEAD
 		cerr << "Error during add: " << item << std::endl;
+=======
+		cerr << "Error during check the item: " << item << std::endl;
 		return false;
-	}
-}
-
 /**
  * @brief Function which returns a window, where the key is of the first element is smaller than the key of the item,
- * and the second key bigger or equal. 
+ * and the second key bigger or equal.
  *
- * @param[in]  	item  		item, from which the key is calculated to search the window 
+ * @param[in]  	item  		item, from which the key is calculated to search the window
  * @param[out]  benchMark  	a struct, which stores information for benchmarking
  */
 template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
+	std::chrono::_V2::system_clock::time_point resetTime;
+	bool reset = false; // is true, if there was a reset and we have to start again from the beginning
 	int32_t key = key_calc(item);
 	while (true) {
 		pred = head;
@@ -191,6 +191,13 @@ template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_ben
 			pred = curr;
 			curr = curr->next;
 		}
+		if (reset == true) {
+			auto finishTime = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = finishTime - resetTime;
+			uint32_t mus = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+			benchMark->lostTime += mus;
+			reset = false;
+		}
 
 		Window_t<nodeFine<T>> w{pred, curr};
 		lock(w);
@@ -200,7 +207,9 @@ template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_ben
 			return w;
 		} else { // not reachable
 			unlock(w);
-			benchMark->goToStart+=1;
+			benchMark->goToStart += 1;
+			resetTime = chrono::high_resolution_clock::now();
+			reset = true;
 		}
 	}
 }
@@ -243,7 +252,6 @@ template <class T> void Optimistic_mem<T>::unlock(Window_t<nodeFine<T>> w) {
 	w.curr->unlock();
 }
 
-
 /**
  * @brief Function to empty and delete que of candidats for delete
  *
@@ -258,7 +266,7 @@ template <class T> void Optimistic_mem<T>::emptyQueue(bool final) {
 	/* get the total number of threads available in this parallel region */
 	size_t NPR = omp_get_num_threads();
 	while (deleteQueue.empty() == false) {
-		node_del<nodeFine<T>> *curr = static_cast<node_del<nodeFine<T>>*>(deleteQueue.front());
+		node_del<nodeFine<T>> *curr = static_cast<node_del<nodeFine<T>> *>(deleteQueue.front());
 		snap[tid]++;
 		if (final == false) {
 			for (size_t i = 0; i < NPR; i++) {
@@ -272,6 +280,5 @@ template <class T> void Optimistic_mem<T>::emptyQueue(bool final) {
 	}
 	return;
 }
-
 
 template class Optimistic_mem<int>;

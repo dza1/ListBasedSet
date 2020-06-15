@@ -274,6 +274,7 @@ static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark
 	sub_benchMark->cores = cores;
 	for (size_t i = 0; i < cores; i++) {
 		sub_benchMark->goToStart += sub_benchMark_arr[i].goToStart;
+		sub_benchMark->lostTime += sub_benchMark_arr[i].lostTime;
 	}
 	cout << green << "Test succeeded" << reset << " in " << ms << "ms with " << cores << " cores" << endl;
 }
@@ -326,6 +327,7 @@ static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t
 	// sum up the "goToStart" from all threads
 	for (size_t i = 0; i < cores; i++) {
 		sub_benchMark->goToStart += sub_benchMark_arr[i].goToStart;
+		sub_benchMark->lostTime += sub_benchMark_arr[i].lostTime;
 	}
 	if (correct) {
 		cout << green << "Test succeeded" << reset << " in " << ms << "ms with " << cores << " cores" << endl;
