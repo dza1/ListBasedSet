@@ -12,6 +12,8 @@
 #include "Lock_free_impr_mem.hpp"
 #include "Optimistic.hpp"
 #include "Optimistic_mem.hpp"
+#include "Lazy.hpp"
+#include "Lazy_mem.hpp"
 #include "benchmark.hpp"
 #include "stdio.h"
 #include "termcolor.hpp"
@@ -129,6 +131,40 @@ int main(int argc, char *argv[]) {
 			benchMark = BENCHMARK_E;
 			averBenchm(benchMark_arr, &benchMark);
 			BENCHM_TO_CSV(outFile, "Optimistic_mem", benchMark, testSizePre, testSizeMain);
+
+			////////////////////// Lazy /////////////////////
+			cout << white << "Lazy:" << endl;
+			for (size_t i = 0; i < REPEAT_TESTS; i++) {
+				list = new Lazy<int>();
+				cout << "Pre: ";
+				benchMark_arr[i] = BENCHMARK_E;
+				runtest(testcases[0], list, &benchMark_arr[i].pre);
+				cout << "Main: ";
+				runtest(testcases[1], list, &benchMark_arr[i].main);
+				cout << "Check: ";
+				check(testcases[1], list, &benchMark_arr[i].check);
+				delete list;
+			}
+			benchMark = BENCHMARK_E;
+			averBenchm(benchMark_arr, &benchMark);
+			BENCHM_TO_CSV(outFile, "Lazy", benchMark, testSizePre, testSizeMain);
+
+			////////////////////// Lazy_mem /////////////////////
+			cout << white << "Lazy_mem:" << endl;
+			for (size_t i = 0; i < REPEAT_TESTS; i++) {
+				list = new Lazy_mem<int>();
+				cout << "Pre: ";
+				benchMark_arr[i] = BENCHMARK_E;
+				runtest(testcases[0], list, &benchMark_arr[i].pre);
+				cout << "Main: ";
+				runtest(testcases[1], list, &benchMark_arr[i].main);
+				cout << "Check: ";
+				check(testcases[1], list, &benchMark_arr[i].check);
+				delete list;
+			}
+			benchMark = BENCHMARK_E;
+			averBenchm(benchMark_arr, &benchMark);
+			BENCHM_TO_CSV(outFile, "Lazy_mem", benchMark, testSizePre, testSizeMain);
 
 			////////////////////// LockFree /////////////////////
 			cout << white << "LockFree:" << endl;
