@@ -143,16 +143,16 @@ template <class T> bool LockFree_impr<T>::remove(T item, sub_benchMark_t *benchM
 	}
 	// Exception handling
 	catch (exception &e) {
-		cerr << "Error during add: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-
-<<<<<<< HEAD
-		cerr << "Error during add: " << item << std::endl;
-=======
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Error during remove the item: " << item << std::endl;
 		return false;
+	}
+}
+
 /**
  * @brief Function which checks if the item is in the datastructure
  *

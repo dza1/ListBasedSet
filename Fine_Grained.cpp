@@ -175,13 +175,13 @@ template <class T> bool FineList<T>::contains(T item, sub_benchMark_t *benchMark
 	catch (exception &e) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove: " << item << std::endl;
+		cerr << "Error during contains: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		pred->unlock();
 		curr->unlock();
-		cerr << "Error during remove: " << item << std::endl;
+		cerr << "Error during contains: " << item << std::endl;
 		return false;
 	}
 }

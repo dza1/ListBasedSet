@@ -156,12 +156,12 @@ template <class T> bool CoarseList<T>::contains(T item, sub_benchMark_t *benchMa
 	// Exception handling
 	catch (exception &e) {
 		mtx.unlock();
-		cerr << "Error during remove: " << item << std::endl;
+		cerr << "Error during contains: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		mtx.unlock();
-		cerr << "Error during remove: " << item << std::endl;
+		cerr << "Error during contains: " << item << std::endl;
 		return false;
 	}
 }
