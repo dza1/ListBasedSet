@@ -56,7 +56,6 @@ template <class T> Lazy_mem<T>::~Lazy_mem() {
  */
 template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
 	nodeLazy<T> *pred, *curr;
-	Window_t<nodeLazy<T>> w;
 	try {
 		int32_t key = key_calc<T>(item);
 		head->lock();
@@ -92,12 +91,10 @@ template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
 
 	// Exception handling
 	catch (exception &e) {
-		unlock(w);
 		cerr << "Error during add: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		unlock(w);
 		cerr << "Error during add: " << item << std::endl;
 		return false;
 	}
