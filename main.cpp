@@ -24,6 +24,7 @@
 #include <vector>
 using namespace termcolor;
 #include <set>
+#include <unistd.h>
 
 #define PRE_FILENAME "testcases/pre%zu.csv"
 #define MAIN_FILENAME "testcases/main%zu.csv"
@@ -31,8 +32,8 @@ using namespace termcolor;
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 static uint32_t read_file(string name, vector<vector<int>> *cases);
-static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark);
-static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark);
+static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark, size_t core_limit);
+static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark,size_t core_limit);
 
 /**
  * @brief Entrypoint of the Programm
@@ -40,7 +41,23 @@ static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t
  * @param [const]	PRE_FILENAME filename of the add testfile
  * @param [const]	MAIN_FILENAME filename of the mixed testfile
  */
+
 int main(int argc, char *argv[]) {
+	////////////////////////////////////////Read options//////////////////////////////////////////////
+	int opt;
+	size_t core_limit = 256; // supesed number of threads
+
+	while ((opt = getopt(argc, argv, "n:")) != -1) {
+		switch (opt) {
+		case 'n':
+			core_limit = (size_t)atoi(optarg);
+			break;
+
+		default: /* '?' */
+			cout << "usage ./main -n core_limit" <<endl;
+		}
+	}
+
 	benchMark_t benchMark;
 	benchMark_t benchMark_arr[REPEAT_TESTS];
 	SetList<int> *list;
@@ -61,18 +78,17 @@ int main(int argc, char *argv[]) {
 		}
 		cout << blue << main_file << endl;
 
-		/*
 		///////////////// CoarseList///////////////////////
 		cout << white << "CoarseList:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
 			list = new CoarseList<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -87,11 +103,11 @@ int main(int argc, char *argv[]) {
 			list = new FineList<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -106,11 +122,11 @@ int main(int argc, char *argv[]) {
 			list = new Optimistic<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -125,11 +141,11 @@ int main(int argc, char *argv[]) {
 			list = new Optimistic_mem<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -144,11 +160,11 @@ int main(int argc, char *argv[]) {
 			list = new Lazy<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -156,18 +172,18 @@ int main(int argc, char *argv[]) {
 		if (write_csv("Lazy", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-*/
+
 		////////////////////// Lazy_mem /////////////////////
 		cout << white << "Lazy_mem:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
 			list = new Lazy_mem<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -175,18 +191,18 @@ int main(int argc, char *argv[]) {
 		if (write_csv("Lazy_mem", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-/*
+
 		////////////////////// LockFree /////////////////////
 		cout << white << "LockFree:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
 			list = new LockFree<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -201,11 +217,11 @@ int main(int argc, char *argv[]) {
 			list = new LockFree_impr<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
@@ -214,25 +230,24 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 
-		////////////////////// LockFree_impr /////////////////////
+		////////////////////// LockFree_impr_mem /////////////////////
 		cout << white << "LockFree_impr_mem:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
 			list = new LockFree_impr_mem<int>();
 			cout << "Pre: ";
 			benchMark_arr[i] = BENCHMARK_E;
-			runtest(testcases[0], list, &benchMark_arr[i].pre);
+			runtest(testcases[0], list, &benchMark_arr[i].pre,core_limit);
 			cout << "Main: ";
-			runtest(testcases[1], list, &benchMark_arr[i].main);
+			runtest(testcases[1], list, &benchMark_arr[i].main,core_limit);
 			cout << "Check: ";
-			check(testcases[1], list, &benchMark_arr[i].check);
+			check(testcases[1], list, &benchMark_arr[i].check,core_limit);
 			delete list;
 		}
 		benchMark = BENCHMARK_E;
 		averBenchm(benchMark_arr, &benchMark);
-		if (write_csv("LockFree_impr", benchMark, testSizePre, testSizeMain) == 0) {
+		if (write_csv("LockFree_impr_mem", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-		*/
 
 		testCnt++;
 	}
@@ -248,12 +263,12 @@ int main(int argc, char *argv[]) {
  * @param[in]  	list  			datastructure for which the benchmark is performed
  * @param[out]  sub_benchMark  	a struct, which stores information for benchmarking
  */
-static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark) {
+static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark, size_t core_limit) {
 	auto startTime = chrono::high_resolution_clock::now();
 	size_t Tmax = omp_get_num_procs(); // available number of threads
 	sub_benchMark_t sub_benchMark_arr[Tmax];
 
-#pragma omp parallel shared(sub_benchMark_arr) num_threads(MIN(cases.size(), Tmax))
+#pragma omp parallel shared(sub_benchMark_arr) num_threads(MIN(MIN(cases.size(), Tmax), core_limit))
 	// limit the maximal threads, if testfile has less lines
 	{
 		sub_benchMark_t sub_benchMark_loc = SUB_BENCHMARK_E;
@@ -301,14 +316,14 @@ static void runtest(vector<vector<int>> cases, SetList<int> *list, sub_benchMark
  * @param[in]  	list  			datastructure for which the benchmark is performed
  * @param[out]  sub_benchMark  	a struct, which stores information for benchmarking
  */
-static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark) {
+static void check(vector<vector<int>> cases, SetList<int> *list, sub_benchMark_t *sub_benchMark, size_t core_limit) {
 	auto startTime = chrono::high_resolution_clock::now();
 	// Compare to Valid
 	bool correct = true;
 	size_t Tmax = omp_get_num_procs();
 	sub_benchMark_t sub_benchMark_arr[Tmax];
 
-#pragma omp parallel num_threads(MIN(cases.size(), Tmax))
+#pragma omp parallel num_threads(MIN(MIN(cases.size(), Tmax), core_limit))
 	{
 		sub_benchMark_t sub_benchMark_loc = SUB_BENCHMARK_E;
 		/* get the total number of threads available in this parallel region */

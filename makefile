@@ -7,7 +7,7 @@
 
 
 CXX=g++
-CFLAGS= -Wall  -fopenmp -c -g -O0 -MMD -std=c++17 
+CFLAGS= -Wall  -fopenmp -c  -O3 -MMD -std=c++17 
 LDFLAGS=  -fopenmp 
 SOURCES=main.cpp node.cpp benchmark.cpp Coarse_Grained.cpp Fine_Grained.cpp Optimistic.cpp Optimistic_mem.cpp Lazy.cpp Lazy_mem.cpp Lock_free.cpp  Lock_free_impr.cpp Lock_free_impr_mem.cpp
 BUILD_DIR = ./.build
