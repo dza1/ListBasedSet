@@ -1,0 +1,68 @@
+\section{Benchmark}
+Beim Ausführen von ./main wird ein Benchmark test durchgeführt. Dieser gibt die jeweils benötigte Zeit aus und erstellt ein .csv für jede datenstruktur
+in den "result" folder. 
+
+\subsection{Aufbau}
+\label{bench:aufbau}
+Es werden zwei files für einen Test benötigt: pre[0-9]+.csv und main[0-9]+.csv. Mithilfe der Einträge im pre-file wird die
+Datenstruktur befüllt. Sobald dies abgeschlossen ist, werden alle negativen Werte im main-file aus der Datenstruktur gelöscht 
+und alle positiven Einträge hinzugefügt. Somit sind in der Liste nur positive Werte zulässig. Die implementierten Datenstrukturen
+würden grundsätzlich aber auch mit negativen Werten und anderen Datentypen funktionieren. Um jedoch einen einfachen 
+Benchmark zu realisieren sind nur Einträge zwischen 1 und 2.147.483.646 möglich. 
+Nach jeder Entfernung ung Hinzufügung eines Wertes wirt mithilfe von \textit{contain} überprüft, ob das element hinzugefügt bzw.
+entfernt wurde. 
+Als dritter und letzter Schritt wird mithilfe von \textit{contain} überprüft, ob sich alle positiven Werte aus dem main-File 
+in der Datenstruktur befinden und ob alle negativen Werte aus der Datenstruktur entfernt wurden. 
+\\
+pre[0-9]+.csv und main[0-9]+.csv sind so aufgebaut, dass im main-File alle Werte aus dem pre-file mit negativen Vorzeichen
+vorhanden sind und die positiven Werte nicht im pre-File vorkommen. Desweiteren werden alle Einträge in den beiden Files
+zufällig permutiert. 
+
+\subsection{Testcases erstellen}
+Die Testcases werden mithilfe eines Python Skriptes erstellt. Dabei ist die größe der Testcases mithilfe der Konstanten
+RAW\_BASE und COOLUMS\_BASE einzustellen. Mit FILE\_AMOUNT kann eingestellt werden, wie viele Testcases erstellt werden.
+Dabei werden bei jeder Interation RAW\_BASE und COOLLUM\_BASE mit der aktuellen Iteration-Variable multipliziert.
+Dies entspricht einen quadratischen Anstieg der Einträge in den Testfiles.   
+
+
+\subsection{Resultate}
+Die Dauer jedes einzelnen Tests und ob der Test erfolgreich war wird in der Kommandozeile ausgegeben. Desweiteren wird
+im Ordner \textit{results} für jede Datenstruktur ein CSV File angelegt. Die Beschreibung der einzelnen 
+Spalten kann aus Tablelle \ref{tab:csv} entnommen werden.
+\begin{table}[hbt!]
+	%\begingroup
+
+	\setstretch{1.2}
+	%\renewcommand{\arraystretch}{1.5} % Default value: 1
+	\begin{tabular}{ |m{2.5cm}|  m{13cm}| } 
+
+		\hline
+	\multicolumn{2}{|l|}{\textbf{Algemeines}}  \\  \hline
+	 Cores: & 		Anzahl der verwendeten Cores    \\ \hline
+	 TestSizePre& 	Anzahl der Werte, die im ersten Schritt in die Datenstruktur eingefügt wurden\\ \hline
+	 TestSizeMain& 	Anzahl der Werte, die im zweiten Schritt hinzugefügt oder entfernt wurden\\ \hline
+	 
+	 \multicolumn{2}{l}{} \\ \hline
+	 \multicolumn{2}{|l|}{\textbf{Ausschließliches einfügen in die Datenstruktur nur \textit{add()}}}    \\ \hline
+	 time write& 	Benötigte Zeit, um die Werte aus dem ersten Schritt in die Datenstruktur einzufügen\\ \hline
+	 goToStart write& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
+	 lostTime write&  Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	 \multicolumn{2}{l}{} \\ \hline
+	 \multicolumn{2}{|l|}{\textbf{Gemischter Zugriff \textit{add(), remove()} und \textit{contain()}}}    \\ \hline
+	 time mixed& 	Benötigte Zeit, um die Werte aus dem zweiten Schritt in die Datenstruktur einzufügen 
+	 				bzw. zu entfernen und jeweils anschließend zu überprüfen\\ \hline
+	 goToStart mixed& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
+	 lostTime mixed& Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	 \multicolumn{2}{l}{} \\ \hline
+	 \multicolumn{2}{|l|}{\textbf{Lesender Zugriff nur \textit{contain()}}}    \\ \hline
+	 time check& Benötigte Zeit, um zu überürüfen, ob alle Werte aus dem zweiten Schritt hinzugefügt bzw. entfernt wurden \\ \hline
+	 goToStart check& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
+	 lostTime check& Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	\end{tabular} 
+	\caption{CSV Spalten}
+	\label{tab:csv}
+	\end{table}
+
+\subsection{Wiederholungen}
+Um ein möglichst genaues Ergebnis zu erhalten, müssen die Benchmarks wiederholt werden. Dazu steht in \textit{benchmark.hpp}
+die Konstante REPEAT\_TESTS zur Verfügung. In den CSV-Files werden dann die Durchschnittswerte aller Wiederholungen eingetragen.
