@@ -1,8 +1,8 @@
 import random
 
 FILE_AMOUNT = 1
-RAW_BASE = 1000 #amount of lines for the first file
-COOLUMS_BASE = 100 #amount of coolums for the first line 
+RAW_BASE = 50 #amount of lines for the first file
+COOLUMS_BASE = 50 #amount of coolums for the first line 
 
 
 def create_testfiles():

@@ -121,8 +121,8 @@ template <class T> bool Lazy_mem<T>::remove(T item, sub_benchMark_t *benchMark) 
 		}
 
 		w.curr->marked = true;
-		w.pred->next =
-		 w.curr->next;
+		w.pred->next = w.curr->next;
+		deleteQueue.push(new node_del<nodeLazy<T>>(w.curr, this->snap, this->Tmax));
 		unlock(w);
 		emptyQueue(false);
 		return true;

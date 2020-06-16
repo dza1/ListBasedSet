@@ -61,6 +61,7 @@ int main(int argc, char *argv[]) {
 		}
 		cout << blue << main_file << endl;
 
+		/*
 		///////////////// CoarseList///////////////////////
 		cout << white << "CoarseList:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
@@ -155,7 +156,7 @@ int main(int argc, char *argv[]) {
 		if (write_csv("Lazy", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-
+*/
 		////////////////////// Lazy_mem /////////////////////
 		cout << white << "Lazy_mem:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
@@ -174,7 +175,7 @@ int main(int argc, char *argv[]) {
 		if (write_csv("Lazy_mem", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-
+/*
 		////////////////////// LockFree /////////////////////
 		cout << white << "LockFree:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
@@ -231,6 +232,7 @@ int main(int argc, char *argv[]) {
 		if (write_csv("LockFree_impr", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
+		*/
 
 		testCnt++;
 	}
