@@ -35,3 +35,6 @@ $(BUILD_DIR)/%.o : %.cpp
 clean:
 	rm -rf $(OBJECTS) $(DEP) $(EXECUTABLE) $(BUILD_DIR)
 
+testFiles:
+	cd testcases && rm -f *.csv
+	cd testcases && python3 permutations.py
