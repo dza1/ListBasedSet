@@ -41,35 +41,28 @@ template <class T> Lazy<T>::~Lazy() {
  * @return true, if it was succeccfully added, false otherwise
  */
 template <class T> bool Lazy<T>::add(T item,sub_benchMark_t *benchMark) {
-	nodeLazy<T> *pred, *curr;
+	Window_t<nodeLazy<T>> w;
 	try {
+		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
-		head->lock();
-		pred = head;
-		curr = pred->next;
-		curr->lock();
-
-		while (curr->key < key) {
-			assert(curr->next != NULL);
-			pred->unlock();
-			pred = curr;
-			curr = curr->next;
-			curr->lock();
-		}
 
 		// Item already in the set
-		if (key == curr->key) {
-			pred->unlock();
-			curr->unlock();
+		if (key == w.curr->key) {
+			unlock(w);
 			return false;
 		}
 
 		// Add item to the set
 		nodeLazy<T> *n = new nodeLazy<T>(item);
-		n->next = curr;
-		pred->next = n;
-		pred->unlock();
-		curr->unlock();
+		if (w.pred->key >= n->key) {
+			printf("Error");
+		}
+		n->next = w.curr;
+		w.pred->next = n;
+
+		assert(w.pred->key < n->key);
+		assert(n->key < w.curr->key);
+		unlock(w);
 		return true;
 	}
 
@@ -111,12 +104,12 @@ template <class T> bool Lazy<T>::remove(T item, sub_benchMark_t *benchMark) {
 	// Exception handling
 	catch (exception &e) {
 		unlock(w);
-		cerr << "Error during add: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
 		unlock(w);
-		cerr << "Error during add: " << item << std::endl;
+		cerr << "Error during remove: " << item << std::endl;
 		return false;
 	}
 }
@@ -140,11 +133,11 @@ template <class T> bool Lazy<T>::contains(T item, sub_benchMark_t *benchMark) {
 	}
 	// Exception handling
 	catch (exception &e) {
-		cerr << "Error during add: " << item << std::endl;
+		cerr << "Error during contain: " << item << std::endl;
 		cerr << "Standard exception: " << e.what() << endl;
 		return false;
 	} catch (...) {
-		cerr << "Error during add: " << item << std::endl;
+		cerr << "Error during contain: " << item << std::endl;
 		return false;
 	}
 }
