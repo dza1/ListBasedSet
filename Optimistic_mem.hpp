@@ -34,7 +34,7 @@ template <typename T> class Optimistic_mem : public SetList<T> { // The class
 
   public:
 	nodeFine<T> *head;
-	Optimistic_mem();
+	Optimistic_mem(size_t Tmax);
 	~Optimistic_mem();
 	bool add(T item, sub_benchMark_t *benchMark);
 	bool remove(T item, sub_benchMark_t *benchMark);

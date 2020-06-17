@@ -15,9 +15,10 @@ create test case files (python3 required):
 	make testFiles
 
 execute benchmarktest for List Based Set:
-	./main [-n core-limit]
-		-core-limit defines the maximal number of cores to use.
-	 	-The number of cores is also limited with the available cores and the number of rows in the CSV files.
+	./main [-n thread_amount]
+		-thread_amount defines the number of threads to use, without this option it use the amount of available cores
+	 	-The number of threads is limited with the number of rows in the CSV files.
+		
 
 
 Set the size of testcases

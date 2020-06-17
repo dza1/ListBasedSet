@@ -25,11 +25,11 @@ static thread_local queue<void *> deleteQueue;
 /**
  * @brief Constructor for the datastructure
  */
-template <class T> LockFree_impr_mem<T>::LockFree_impr_mem() {
+template <class T> LockFree_impr_mem<T>::LockFree_impr_mem(size_t Tmax) {
 	head = new nodeAtom<T>(0, INT32_MIN);
 	head->next = new nodeAtom<T>(0, INT32_MAX);
 
-	Tmax = omp_get_max_threads();
+	this->Tmax =Tmax;
 	snap = new std::atomic<uint32_t>[Tmax];
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);

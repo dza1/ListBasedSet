@@ -32,7 +32,7 @@ template <typename T> class LockFree_impr_mem : public SetList<T> { // The class
 
   public:
 	nodeAtom<T> *head;
-	LockFree_impr_mem();
+	LockFree_impr_mem(size_t Tmax);
 	~LockFree_impr_mem();
 	bool add(T item, sub_benchMark_t *benchMark);
 	bool remove(T item, sub_benchMark_t *benchMark);

@@ -32,7 +32,7 @@ template <typename T> class Lazy_mem : public SetList<T> { // The class
 
   public:
 	nodeLazy<T> *head;
-	Lazy_mem();
+	Lazy_mem(size_t Tmax);
 	~Lazy_mem();
 	bool add(T item, sub_benchMark_t *benchMark);
 	bool remove(T item, sub_benchMark_t *benchMark);

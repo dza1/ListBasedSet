@@ -26,11 +26,11 @@ static thread_local queue<void*> deleteQueue;
 /**
  * @brief Constructor for the datastructure
  */
-template <class T> Optimistic_mem<T>::Optimistic_mem() {
+template <class T> Optimistic_mem<T>::Optimistic_mem(size_t Tmax) {
 	head = new nodeFine<T>(0, INT32_MIN);
 	head->next = new nodeFine<T>(0, INT32_MAX);
 
-	Tmax = omp_get_max_threads();
+	this->Tmax =Tmax;
 	snap = new std::atomic<uint32_t>[Tmax];
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);
@@ -267,6 +267,7 @@ template <class T> void Optimistic_mem<T>::emptyQueue(bool final) {
 				}
 			}
 		}
+		assert(curr =static_cast<node_del<nodeFine<T>>*>(deleteQueue.front()));
 		deleteQueue.pop();
 		delete (curr);
 	}
