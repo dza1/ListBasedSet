@@ -27,6 +27,8 @@ using namespace termcolor;
 #include <unistd.h>
 #include <assert.h>
 
+#define START_FILE 2
+
 #define PRE_FILENAME "testcases/pre%zu.csv"
 #define MAIN_FILENAME "testcases/main%zu.csv"
 
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
 	benchMark_t benchMark;
 	benchMark_t benchMark_arr[REPEAT_TESTS];
 	SetList<int> *list;
-	size_t testCnt = 0;
+	size_t testCnt = START_FILE;
 	while (true) { // Read all available main and pre files
 		vector<vector<int>> testcases[2];
 		uint32_t testSizePre = 0;
@@ -81,7 +83,7 @@ int main(int argc, char *argv[]) {
 		int T_max=  MIN(MAX(testSizePre,testSizeMain),thread_am);
 		
 		cout << blue << main_file << endl;
-
+/*
 		///////////////// CoarseList///////////////////////
 		cout << white << "CoarseList:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
@@ -119,7 +121,7 @@ int main(int argc, char *argv[]) {
 		if (write_csv("FineList", benchMark, testSizePre, testSizeMain) == 0) {
 			break;
 		}
-
+*/
 		////////////////////// Optimistic /////////////////////
 		cout << white << "Optimistic:" << endl;
 		for (size_t i = 0; i < REPEAT_TESTS; i++) {
