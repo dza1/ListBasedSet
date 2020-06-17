@@ -77,6 +77,7 @@ template <class T> bool LockFree_impr<T>::add(T item, sub_benchMark_t *benchMark
 				reset = true;
 				continue;
 			}
+			return true;
 		}
 
 	}
