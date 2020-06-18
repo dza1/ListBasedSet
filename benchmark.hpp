@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#define REPEAT_TESTS 10 // Amount of iterations for each test
+#define REPEAT_TESTS 1 // Amount of iterations for each test
 #define FOLDER_RESULT "result"
 
 // empty sub_benchMark_t struct
