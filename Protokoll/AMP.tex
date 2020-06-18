@@ -37,7 +37,12 @@ eingefügt (siehe \ref{bench:aufbau}).
 \section{List-based set with fine-grained locks}
 \section{List-based set with optimistic synchronization}
 \section{List-based set with lazy synchronization}
+
+Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. in späterer folge wird durch das Memory management, ähnlich wie bei optimistic synchronization, die Node gelöscht sobald sichergestellt werden kann, dass kein Process mehr auf die Node zugreift.
+
 \section{Lock-free list-based set}
+
+
 \subsection{Verbesserungen}
 In der \textit{find} Funktion wird für das Auslinken eines Nodes wird ein Compare and Swap(CAS) verwendet. Falls dies fehlschlägt, 
 weil z.b. der Node zum beispiel bereits ausgelinkt wurde,
