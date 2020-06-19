@@ -3,7 +3,7 @@ main
 **/.build
 *.txt
 main
-*.csv
+/testcases/*.csv
 
 *.aux
 *.fdb*
@@ -12,5 +12,7 @@ main
 *.out
 *.gz
 *.toc
-**/result
+**/result_old
+**/result_copy
 *.pdf
+*.old

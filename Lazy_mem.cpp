@@ -14,7 +14,6 @@ using namespace std;
 #include <stdint.h>
 #include "benchmark.hpp"
 #include <queue>
-#include <unordered_map>
 
 
 //queue to store the candidats for delete
@@ -30,8 +29,10 @@ template <class T> Lazy_mem<T>::Lazy_mem(size_t Tmax) {
 
 	this->Tmax =Tmax;
 	snap = new std::atomic<uint32_t>[Tmax];
+	active = new std::atomic<uint16_t>[Tmax];
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);
+		active[i].store(0);
 	}
 }
 
@@ -153,7 +154,7 @@ template <class T> bool Lazy_mem<T>::contains(T item, sub_benchMark_t *benchMark
 		nodeLazy<T> *n = head;
 
 		while(n->key < key) {n = n->next;}
-
+		emptyQueue(false);
 		return n->key == key && !n->marked;
 	}
 	// Exception handling

@@ -2,7 +2,7 @@ import random
 
 FILE_AMOUNT = 1
 RAW_BASE = 100 #amount of lines for the first file
-COOLUMS_BASE = int(5120/2) #amount of coolums for the first line 
+COOLUMS_BASE = int(200) #amount of coolums for the first line  %96 %170 %212
 
 
 def create_testfiles():
