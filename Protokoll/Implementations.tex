@@ -1,0 +1,55 @@
+\section{Implementierung}
+
+\subsection{List-based set with coarse-grained locks}
+
+Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gesperrt. Dadurch kann aber die Parallelisierung nicht wirklich ausgenutzt werden, da zu einem Zeitpunkt maximal ein Prozess auf die Liste zugreifen kann. Diese Implementierung ist daher sehr ähnlich zu einer sequentiellen Implementierung.
+
+\begin{table}[H]
+    \begin{tabularx}{\textwidth}{lX}
+        \textbf{Linearisation Point} & Die Sperrung\\
+        \\
+        \textit{add} & Nachdem die Liste gegsperrt wurde wird sie durchlaufen bis zu dem Punkt an dem der Key der betrachteten Node größer ist als der Einzufügende.\\
+        \textit{contains} & Die Liste wird gesperrt und dann durchlaufen. Falls dabei der gesuchten Wert erscheint der \\
+        \textit{remove} & Nachdem die gesamte Liste gesperrt wurde wird das Elemet in der Liste gesucht und entfernt.\\
+    \end{tabularx}
+\end{table}
+
+\subsection{List-based set with fine-grained locks}
+
+Im unterschied zu den coarse-grained locks wird bei dieser Implementierung immer nur die derzeitige Node gesprerrt. Beim Iterieren der Liste wird während dem Übergang zur nächsten Node die derzeitige und die darauffolgende Node gesperrt. Der Vorteil gegenüber den coarse-grained locks besteht darin, dass nun wirkliche Parallelisierung möglich ist und verschidene Threads an unterschiedlichen Punkten an der Liste arbeiten können.
+
+\textbf{Linearisation Point}\\
+\textbf{Methods:}\\
+\textbf{add}\\
+\textbf{contains}\\
+\textbf{remove}
+
+\subsection{List-based set with optimistic synchronization}
+
+In dieser Implementierung wird beim Suchen eines ELementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte wird startet der Algorithmus von vorne.
+
+\textbf{Linearisation Point}\\
+\textbf{Methods:}\\
+\textbf{add}\\
+\textbf{contains}\\
+\textbf{remove}
+
+\subsection{List-based set with lazy synchronization}
+
+Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. 
+
+In späterer folge wird durch das Memory management, ähnlich wie bei optimistic synchronization, die Node gelöscht sobald sichergestellt werden kann, dass kein Process mehr auf die Node zugreift.
+
+\textbf{Linearisation Point}\\
+\textbf{Methods:}\\
+\textbf{add}\\
+\textbf{contains}\\
+\textbf{remove}
+
+\subsection{Lock-free list-based set}
+
+\textbf{Linearisation Point}\\
+\textbf{Methods:}\\
+\textbf{add}\\
+\textbf{contains}\\
+\textbf{remove}

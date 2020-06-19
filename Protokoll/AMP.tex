@@ -8,6 +8,9 @@
 \usepackage{multirow}
 \usepackage{tabularx}
 \usepackage[naustrian]{babel}
+\usepackage{float}
+
+\renewcommand{\arraystretch}{1.5}
 
 \usetikzlibrary{arrows,automata} 
 
@@ -30,64 +33,41 @@
 Für das Programmieren mit mehreren Prozessoren ist es oft erforderlich, eine gemeinsame Datenstruktur zu verwenden. 
 Eine möglichkeit ist List based Set. Dabei handelt es sich um eine Liste, bei welcher jedes Element einen Key besitzt.
 Dieser Key ist eindeutig und die gesamte Liste ist anhand des Schlüssel sortiert. 
-Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}).
+Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}). Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur sichern.
 
-\section{List-based set with coarse-grained locks}
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (0,0) {$- \infty$};
+		\draw[->] (0.5,0) -- (1.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (2,0) {$3$};
+		\draw[->] (2.5,0) -- (3.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (4,0) {$5$};
+		\draw[->] (4.5,0) -- (5.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (6,0) {$8$};
+		\draw[->] (6.5,0) -- (7.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (8,0) {$10$};
+		\draw[->] (8.5,0) -- (9.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (10,0) {$\infty$};
+	\end{tikzpicture}
+	\caption{Aufbau der Liste}
+	\label{tik:list}
+\end{figure}
 
-Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gesperrt. Dadurch kann aber die Parallelisierung nicht wirklich ausgenutzt werden, da zu einem Zeitpunkt maximal ein Process auf die Liste zugreifen kann. Daher ähnelt diese Version einer sequentiellen Implementierung.
+In der Abbildung \ref{tik:list} wird dargestellt wie eine solche Liste aussieht. Am Anfang und am Ende befinden sich 2 Nodes $-\infty$ und $\infty$ die den Anfang und das Ende der Liste markieren. Dazwischen befinden sich in sortierter Reihenfolge die eingefügten Keys.
 
-\subsection{Linearisation Point}
+Jede der Implementierungen enthält 3 Methoden die mit denen die Liste bearbeitet werden kann:
 
-\subsection{Methods:}
-\textbf{add}\\
-\textbf{contains}\\
-\textbf{remove}
-
-\section{List-based set with fine-grained locks}
-
-Im unterschied zu den coarse-grained locks wird bei dieser Implementierung immer nur die derzeitige Node gesprerrt. Beim Iterieren der Liste wird während dem Übergang zur nächsten Node die derzeitige und die darauffolgende Node gesperrt. Der Vorteil gegenüber den coarse-grained locks besteht darin, dass nun wirkliche Parallelisierung möglich ist und verschidene Threads an unterschiedlichen Punkten an der Liste arbeiten können.
-
-\subsection{Linearisation Point}
-
-\subsection{Methods:}
-\textbf{add}\\
-\textbf{contains}\\
-\textbf{remove}
-
-\section{List-based set with optimistic synchronization}
-
-In dieser Implementierung wird beim Suchen eines ELementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte wird startet der Algorithmus von vorne.
-
-\subsection{Linearisation Point}
-
-\subsection{Methods:}
-\textbf{add}\\
-\textbf{contains}\\
-\textbf{remove}
-
-\section{List-based set with lazy synchronization}
-
-Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. 
-
-In späterer folge wird durch das Memory management, ähnlich wie bei optimistic synchronization, die Node gelöscht sobald sichergestellt werden kann, dass kein Process mehr auf die Node zugreift.
-
-\subsection{Linearisation Point}
-
-\subsection{Methods:}
-\textbf{add}\\
-\textbf{contains}\\
-\textbf{remove}
-
-\section{Lock-free list-based set}
-
-\subsection{Linearisation Point}
-
-\subsection{Methods:}
-\textbf{add}\\
-\textbf{contains}\\
-\textbf{remove}
+\begin{table}[H]
+    \begin{tabularx}{\textwidth}{lX}
+        \textit{add} & Fügt ein Elemet in die Liste ein. Falls dieses schon enthalten ist gibt die Methode \textit{false} zurück sonst \textit{true} \\
+        \textit{contains} & Wenn das Element in der Liste gefunden wurde gibt diese Methode \textit{true} oder sonst \textit{false} zurück. \\
+        \textit{remove} & Diese Methode entfernt einen Key aus der Liste und gibt \textit{true} zurück. Falls der Key nicht in der Liste vorhanden ist wird \textit{false} zurückgegeben. \\
+    \end{tabularx}
+\end{table}
 
 
+\input{Implementations.tex}
 
 \subsection{Verbesserungen}
 In der \textit{find} Funktion wird für das Auslinken eines Nodes wird ein Compare and Swap(CAS) verwendet. Falls dies fehlschlägt, 
@@ -97,7 +77,7 @@ Es wird immer der alte \textit{predecessor} gespeichert. Sollte CAS fehlschlagen
 zum auslinken markiert wurde. Ist dies der Fall, werden \textit{predecessor, current} und \textit{successor} auf den jeweiligen Vorgänger
 gesetzt und an dieser Stelle weitergemacht. 
 
-\input{MemmoryManagment.tex} 
+\input{MemmoryManagment.tex}
 \input{Benchmark.tex} 
 
 	
