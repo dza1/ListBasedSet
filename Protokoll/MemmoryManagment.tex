@@ -1,4 +1,4 @@
-\section{Memmory Managment}
+\section{Memmory Managment}\label{sec:mem}
 Bei \textit{List-based set with optimistic synchronization}, \textit{List-based set with lazy synchronization} und \textit{Lock-free list-based set}
 gibt es ein Problem mit den Memmory Managment. Bei diesen Datenstrukturen ist das lesen eines Nodes auch ohne einen Lock möglich. 
 Dadurch kann von einen Thread nicht sichergestellt werden, dass nach dem unlinken eines Nodes dieser nicht noch von einen anderen Thread gelesen wird.
