@@ -36,7 +36,7 @@
 struct sub_benchMark_t {
 	uint32_t goToStart;
 	uint32_t lostTime;
-	uint16_t time;
+	uint32_t time;
 	uint16_t cores;
 };
 

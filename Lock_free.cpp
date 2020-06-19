@@ -129,7 +129,7 @@ template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) 
 				resetFlag(&succ);
 
 				// mark as deleted
-				if (atomic_compare_exchange_weak(&w.curr->next, &succ, markedsucc) == false) {
+				if (atomic_compare_exchange_strong(&w.curr->next, &succ, markedsucc) == false) {
 					benchMark->goToStart += 1;
 					resetTime = chrono::high_resolution_clock::now();
 					reset = true;
@@ -137,7 +137,7 @@ template <class T> bool LockFree<T>::remove(T item, sub_benchMark_t *benchMark) 
 				}
 
 				// try to unlink
-				atomic_compare_exchange_weak(&w.pred->next, &w.curr, succ);
+				atomic_compare_exchange_strong(&w.pred->next, &w.curr, succ);
 				return true;
 			} else {
 				return false;
@@ -202,7 +202,7 @@ retry:
 				resetFlag(&succ);
 
 				//  link out curr, not possible when pred is flaged
-				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
+				if (atomic_compare_exchange_strong(&pred->next, &curr, succ) == false) {
 					benchMark->goToStart += 1;
 					// messure the time thats lost because of the reset
 					auto finishTime = chrono::high_resolution_clock::now();

@@ -24,6 +24,7 @@ template <typename T> class Lazy_mem : public SetList<T> { // The class
 	std::mutex mtx;
 	Window_t<nodeLazy<T>> find(T item, sub_benchMark_t *benchMark);
 	std::atomic<uint32_t> *snap;
+	std::atomic<uint16_t> *active;
 	size_t Tmax;
 
 	void lock(Window_t<nodeLazy<T>> w);
