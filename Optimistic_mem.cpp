@@ -32,8 +32,10 @@ template <class T> Optimistic_mem<T>::Optimistic_mem(size_t Tmax) {
 
 	this->Tmax =Tmax;
 	snap = new std::atomic<uint32_t>[Tmax];
+	active = new std::atomic<uint16_t>[Tmax];
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);
+		active[i].store(0);
 	}
 }
 
