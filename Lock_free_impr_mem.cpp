@@ -31,8 +31,10 @@ template <class T> LockFree_impr_mem<T>::LockFree_impr_mem(size_t Tmax) {
 
 	this->Tmax =Tmax;
 	snap = new std::atomic<uint32_t>[Tmax];
+	active = new std::atomic<uint16_t>[Tmax];
 	for (size_t i = 0; i < Tmax; i++) {
 		snap[i].store(0);
+		active[i].store(0);
 	}
 }
 
@@ -56,6 +58,8 @@ template <class T> LockFree_impr_mem<T>::~LockFree_impr_mem() {
  * @return true, if it was succeccfully added, false otherwise
  */
 template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeAtom<T>> w;
 	std::chrono::_V2::system_clock::time_point resetTime;
 	bool reset = false; // is true, if there was a reset and we have to start again from the beginning
@@ -117,6 +121,8 @@ template <class T> bool LockFree_impr_mem<T>::add(T item, sub_benchMark_t *bench
  * @return true, if it was succeccfully removed, false otherwise
  */
 template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeAtom<T>> w;
 	std::chrono::_V2::system_clock::time_point resetTime;
 	bool reset = false; // is true, if there was a reset and we have to start again from the beginning
@@ -182,6 +188,8 @@ template <class T> bool LockFree_impr_mem<T>::remove(T item, sub_benchMark_t *be
  * @return true, if item is in the datastructure, false otherwise
  */
 template <class T> bool LockFree_impr_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	nodeAtom<T> *n = head;
 
 	int32_t key = key_calc<T>(item);
@@ -223,7 +231,7 @@ retry:
 				resetFlag(&succ);
 
 				//  link out curr, not possible when pred is flaged
-				if (atomic_compare_exchange_weak(&pred->next, &curr, succ) == false) {
+				if (atomic_compare_exchange_strong(&pred->next, &curr, succ) == false) {
 					if (getFlag(old->next) == false && pred != old) { // improvement
 						pred = old;
 						curr = getPointer(pred->next);
@@ -321,14 +329,15 @@ template <class T> bool LockFree_impr_mem<T>::getFlag(nodeAtom<T> *pointer) {
  */
 template <class T> void LockFree_impr_mem<T>::emptyQueue(bool final) {
 	int tid = omp_get_thread_num();
+	active[tid].store(0);
 	/* get the total number of threads available in this parallel region */
 	size_t NPR = omp_get_num_threads();
+	snap[tid]++;
 	while (deleteQueue.empty() == false) {
 		node_del<nodeAtom<T>> *curr = static_cast<node_del<nodeAtom<T>> *>(deleteQueue.front());
-		snap[tid]++;
 		if (final == false) {
 			for (size_t i = 0; i < NPR; i++) {
-				if (curr->snap[i] == this->snap[i].load()) {
+				if (curr->snap[i] == this->snap[i].load() && active[i] == true) {
 					return;
 				}
 			}

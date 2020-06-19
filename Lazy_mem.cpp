@@ -55,6 +55,8 @@ template <class T> Lazy_mem<T>::~Lazy_mem() {
  * @return true, if it was succeccfully added, false otherwise
  */
 template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeLazy<T>> w;
 	try {
 		w = find(item,benchMark);
@@ -101,9 +103,11 @@ template <class T> bool Lazy_mem<T>::add(T item,sub_benchMark_t *benchMark) {
  * @return true, if it was succeccfully removed, false otherwise
  */
 template <class T> bool Lazy_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeLazy<T>> w;
 	try {
-				w = find(item,benchMark);
+		w = find(item,benchMark);
 		int32_t key = key_calc<T>(item);
 
 		if (key != w.curr->key) {
@@ -141,6 +145,8 @@ template <class T> bool Lazy_mem<T>::remove(T item, sub_benchMark_t *benchMark) 
  * @return true, if item is in the datastructure, false otherwise 
  */
 template <class T> bool Lazy_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	int32_t key = key_calc(item);
 
 	try {
@@ -249,14 +255,15 @@ template <class T> void Lazy_mem<T>::unlock(Window_t<nodeLazy<T>> w) {
  */
 template <class T> void Lazy_mem<T>::emptyQueue(bool final) {
 	int tid = omp_get_thread_num();
+	active[tid].store(0);
 	/* get the total number of threads available in this parallel region */
 	size_t NPR = omp_get_num_threads();
+	snap[tid]++;
 	while (deleteQueue.empty() == false) {
-		node_del<nodeLazy<T>> *curr = static_cast<node_del<nodeLazy<T>>*>(deleteQueue.front());
-		snap[tid]++;
+		node_del<nodeAtom<T>> *curr = static_cast<node_del<nodeAtom<T>> *>(deleteQueue.front());
 		if (final == false) {
 			for (size_t i = 0; i < NPR; i++) {
-				if (curr->snap[i] == this->snap[i].load()) {
+				if (curr->snap[i] == this->snap[i].load() && active[i] == true) {
 					return;
 				}
 			}

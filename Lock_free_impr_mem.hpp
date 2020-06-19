@@ -23,6 +23,7 @@ template <typename T> class LockFree_impr_mem : public SetList<T> { // The class
 	Window_t<nodeAtom<T>> find(T item, sub_benchMark_t *benchMark);
 	nodeAtom<T> *getPointer(nodeAtom<T> *pointer);
 	std::atomic<uint32_t> *snap;
+	std::atomic<uint16_t> *active;
 	size_t Tmax;
 
 	void setFlag(nodeAtom<T> **pointer);
