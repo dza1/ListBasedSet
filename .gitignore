@@ -12,5 +12,5 @@ main
 *.out
 *.gz
 *.toc
-**/result
+*.csv
 *.pdf
