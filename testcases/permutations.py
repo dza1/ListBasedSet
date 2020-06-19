@@ -1,8 +1,8 @@
 import random
 
-FILE_AMOUNT = 5
+FILE_AMOUNT = 1
 RAW_BASE = 100 #amount of lines for the first file
-COOLUMS_BASE = 100 #amount of coolums for the first line 
+COOLUMS_BASE = int(5120/2) #amount of coolums for the first line 
 
 
 def create_testfiles():
@@ -65,7 +65,8 @@ for i in range(FILE_AMOUNT):
     main_file="main{0}.csv".format(i)
     pre = open(pre_file,"w")
     main = open(main_file,"w")
-    rows, cols = (RAW_BASE*(i+1), COOLUMS_BASE*(i+1)) 
+    rows, cols = (RAW_BASE, COOLUMS_BASE*(2**(i+1))) 
+    print(rows*cols)
     create_testfiles()
     
 print("finish")

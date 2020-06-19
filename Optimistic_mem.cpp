@@ -57,6 +57,8 @@ template <class T> Optimistic_mem<T>::~Optimistic_mem() {
  * @return true, if it was succeccfully added, false otherwise
  */
 template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
@@ -105,6 +107,8 @@ template <class T> bool Optimistic_mem<T>::add(T item,sub_benchMark_t *benchMark
  * @return true, if it was succeccfully removed, false otherwise
  */
 template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
@@ -144,6 +148,8 @@ template <class T> bool Optimistic_mem<T>::remove(T item, sub_benchMark_t *bench
  * @return true, if item is in the datastructure, false otherwise 
  */
 template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *benchMark) {
+	int tid = omp_get_thread_num();
+	active[tid].store(1);
 	Window_t<nodeFine<T>> w;
 	try {
 		w = find(item,benchMark);
@@ -181,6 +187,8 @@ template <class T> bool Optimistic_mem<T>::contains(T item, sub_benchMark_t *ben
  */
 template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_benchMark_t *benchMark) {
 	nodeFine<T> *pred, *curr;
+	std::chrono::_V2::system_clock::time_point resetTime;
+	bool reset=false; //is true, if there was a reset and we have to start again from the beginning
 	int32_t key = key_calc(item);
 	while (true) {
 		pred = head;
@@ -192,6 +200,13 @@ template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_ben
 			curr = curr->next;
 		}
 
+		if(reset==true){
+			auto finishTime = chrono::high_resolution_clock::now();
+			chrono::duration<double> elapsed = finishTime - resetTime;
+			uint32_t mus = chrono::duration_cast<chrono::microseconds>(elapsed).count();
+			benchMark->lostTime+=mus;
+			reset=false;
+		}
 		Window_t<nodeFine<T>> w{pred, curr};
 		lock(w);
 		assert(w.pred->key <= key);
@@ -201,6 +216,8 @@ template <class T> Window_t<nodeFine<T>> Optimistic_mem<T>::find(T item, sub_ben
 		} else { // not reachable
 			unlock(w);
 			benchMark->goToStart+=1;
+			resetTime = chrono::high_resolution_clock::now();
+			reset=true;
 		}
 	}
 }
@@ -255,19 +272,19 @@ template <class T> void Optimistic_mem<T>::unlock(Window_t<nodeFine<T>> w) {
  */
 template <class T> void Optimistic_mem<T>::emptyQueue(bool final) {
 	int tid = omp_get_thread_num();
+	active[tid].store(0);
 	/* get the total number of threads available in this parallel region */
 	size_t NPR = omp_get_num_threads();
+	snap[tid]++;
 	while (deleteQueue.empty() == false) {
-		node_del<nodeFine<T>> *curr = static_cast<node_del<nodeFine<T>>*>(deleteQueue.front());
-		snap[tid]++;
+		node_del<nodeAtom<T>> *curr = static_cast<node_del<nodeAtom<T>> *>(deleteQueue.front());
 		if (final == false) {
 			for (size_t i = 0; i < NPR; i++) {
-				if (curr->snap[i] == this->snap[i].load()) {
+				if (curr->snap[i] == this->snap[i].load() && active[i] == true) {
 					return;
 				}
 			}
 		}
-		assert(curr =static_cast<node_del<nodeFine<T>>*>(deleteQueue.front()));
 		deleteQueue.pop();
 		delete (curr);
 	}
