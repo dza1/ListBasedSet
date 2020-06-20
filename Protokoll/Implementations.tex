@@ -1,5 +1,5 @@
 \section{Implementierung}
-
+\label{sec:implementation}
 \subsection{List-based set with coarse-grained locks}
 
 Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gesperrt. Dadurch kann aber die Parallelisierung nicht wirklich ausgenutzt werden, da zu einem Zeitpunkt maximal ein Prozess auf die Liste zugreifen kann. Diese Implementierung ist daher sehr ähnlich zu einer sequentiellen Implementierung.
@@ -36,7 +36,12 @@ Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gespe
 
 \subsection{List-based set with fine-grained locks}
 
-Im Unterschied zu den coarse-grained locks wird bei dieser Implementierung immer nur die derzeitige Node gesprerrt. Beim Iterieren der Liste wird während dem Übergang zur nächsten Node die derzeitige und die darauffolgende Node gesperrt. Eine Node kann zu einem Zeitpunkt nur von einem Prozess gesperrt sein. Der Vorteil gegenüber den coarse-grained locks besteht darin, dass nun wirkliche Parallelisierung möglich ist und verschiedene Threads an unterschiedlichen Punkten an der Liste arbeiten können. Es hat jedoch den Nachteil, dass die Iterationsgeschwiendigkeit im Worst Case durch den langsamsten Thread definiert wird. \todo{stimmt das?}
+Im Unterschied zu den coarse-grained locks wird bei dieser Implementierung immer nur die derzeitige Node gesprerrt. 
+Beim Iterieren der Liste wird während dem Übergang zur nächsten Node die derzeitige und die darauffolgende Node gesperrt. 
+Eine Node kann zu einem Zeitpunkt nur von einem Prozess gesperrt sein. Der Vorteil gegenüber den coarse-grained locks besteht darin, 
+dass nun wirkliche Parallelisierung möglich ist und verschiedene Threads an unterschiedlichen Punkten an der Liste arbeiten können. 
+Es hat jedoch den Nachteil, dass die Iterationsgeschwiendigkeit im Worst Case durch den langsamsten Thread definiert wird, da ein 
+Thread in der Liste nicht ``Überholt'' werden kann.
 
 \begin{figure}[H]
 	\centering

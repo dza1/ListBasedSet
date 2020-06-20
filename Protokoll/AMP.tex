@@ -11,6 +11,7 @@
 \usepackage{float}
 \usepackage{todonotes}
 \usepackage{fontawesome}
+\usepackage{subfig}
 
 \renewcommand{\arraystretch}{1.5}
 
@@ -38,7 +39,7 @@ Dieser Key ist eindeutig und die gesamte Liste ist anhand des Schlüssel sortier
 Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}). Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur sichern.
 
 \begin{figure}[H]
-	\centering
+	\centering 
 	\begin{tikzpicture}
 		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (0,0) {$- \infty$};
 		\draw[->] (0.5,0) -- (1.5,0);
@@ -72,6 +73,7 @@ Jede der Implementierungen enthält 3 Methoden die mit denen die Liste bearbeite
 \input{Implementations.tex}
 
 \subsection{Verbesserungen}
+\label{subsec:impr}
 In der \textit{find} Funktion wird für das Auslinken eines Nodes wird ein Compare and Swap(CAS) verwendet. Falls dies fehlschlägt, 
 weil z.b. der Node zum beispiel bereits ausgelinkt wurde,
 wird wieder beim Listenkopf begonnen. Um dieses Verhalten zu verbessern, wurde in \textit{Lock\_free\_impr.cpp} folgendes implementiert:\\
@@ -81,6 +83,7 @@ gesetzt und an dieser Stelle weitergemacht.
 
 \input{MemmoryManagment.tex}
 \input{Benchmark.tex} 
+\input{Results.tex} 
 
 	
 

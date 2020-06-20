@@ -23,7 +23,7 @@ for name in files:
 	print (path)
 	df.to_csv(path,index=False)
 
-	filtert_lines.append(df.loc[df['TestSizePre'] == 20000])
+	filtert_lines.append(df.loc[df['TestSizePre'] == 40000])
 
 i=0
 print(files)
@@ -32,12 +32,14 @@ names=["Coarse List","FineList","Lazy","Lazy_mem","LockFree","LockFree_impr","Lo
 
 
 #####################################
-for list_ard in range(9):
-	size=filtert_lines[list_ard]['cores']
-	y=filtert_lines[list_ard][column]
-	y=y/1000
-	# plotting the points  
-	plt.plot(size, y,marker='o',label = names[list_ard]) 
+for list_type in range(9):
+	size=filtert_lines[list_type]['cores']
+	if(size.size>0):
+		y=filtert_lines[list_type][column]
+		y=y/1000
+		# plotting the points  
+		plt.plot(size, y,marker='o',label = names[list_type]) 
+	
 ######################################
 
 

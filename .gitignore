@@ -16,3 +16,5 @@ main
 **/result_copy
 *.pdf
 *.old
+*.svg
+/result/average

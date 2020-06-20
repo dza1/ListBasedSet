@@ -40,7 +40,7 @@ template <typename T> class nodeFine : public node_virt<T> {
 	void unlock();
 };
 
-/////////////////////////nodeFine/////////////////////////////
+/////////////////////////nodeLazy/////////////////////////////
 template <typename T> class nodeLazy : public nodeFine<T> {
   public:
 	using nodeFine<T>::nodeFine;
