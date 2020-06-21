@@ -18,3 +18,4 @@ main
 *.old
 *.svg
 /result/average
+*.csv
