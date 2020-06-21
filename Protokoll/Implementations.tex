@@ -139,3 +139,12 @@ In späterer folge wird durch das Memory management, ähnlich wie bei optimistic
         \textit{remove} & \\
     \end{tabularx}
 \end{table}
+
+\subsubsection{Verbesserungen}
+\label{subsec:impr}
+In der \textit{find} Funktion wird für das Auslinken eines Nodes wird ein Compare and Swap(CAS) verwendet. Falls dies fehlschlägt, 
+weil z.b. der Node zum beispiel bereits ausgelinkt wurde,
+wird wieder beim Listenkopf begonnen. Um dieses Verhalten zu verbessern, wurde in \textit{Lock\_free\_impr.cpp} folgendes implementiert:\\
+Es wird immer der alte \textit{predecessor} gespeichert. Sollte CAS fehlschlagen, wird überprüft ob der alte \textit{predecessor}
+zum auslinken markiert wurde. Ist dies der Fall, werden \textit{predecessor, current} und \textit{successor} auf den jeweiligen Vorgänger
+gesetzt und an dieser Stelle weitergemacht. 

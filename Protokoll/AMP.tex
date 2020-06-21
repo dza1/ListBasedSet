@@ -34,9 +34,12 @@
 \newpage  
 \section{Einleitung}
 Für das Programmieren mit mehreren Prozessoren ist es oft erforderlich, eine gemeinsame Datenstruktur zu verwenden. 
-Eine möglichkeit ist List based Set. Dabei handelt es sich um eine Liste, bei welcher jedes Element einen Key besitzt.
+Eine Möglichkeit ist List based Set. Dabei handelt es sich um eine Liste, bei welcher jedes Element einen Key besitzt.
 Dieser Key ist eindeutig und die gesamte Liste ist anhand des Schlüssel sortiert. 
-Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}). Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur sichern.
+Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}). 
+Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene 
+Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur sichern. Eine Anleitung zum kompilieren und ausführen kann
+aus dem ``README.TXT'' entnommen werden.
 
 \begin{figure}[H]
 	\centering 
@@ -57,7 +60,8 @@ Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur 
 	\label{tik:list}
 \end{figure}
 
-In der Abbildung \ref{tik:list} wird dargestellt wie eine solche Liste aussieht. Am Anfang und am Ende befinden sich 2 Nodes $-\infty$ und $\infty$ die den Anfang und das Ende der Liste markieren. Dazwischen befinden sich in sortierter Reihenfolge die eingefügten Keys.
+In der Abbildung \ref{tik:list} wird dargestellt wie eine solche Liste aussieht. Am Anfang und am Ende befinden sich 2 Nodes $-\infty$ und $\infty$ die den 
+Anfang und das Ende der Liste markieren. Dazwischen befinden sich in sortierter Reihenfolge die eingefügten Keys.
 
 Jede der Implementierungen enthält 3 Methoden die mit denen die Liste bearbeitet werden kann:
 
@@ -72,14 +76,7 @@ Jede der Implementierungen enthält 3 Methoden die mit denen die Liste bearbeite
 
 \input{Implementations.tex}
 
-\subsection{Verbesserungen}
-\label{subsec:impr}
-In der \textit{find} Funktion wird für das Auslinken eines Nodes wird ein Compare and Swap(CAS) verwendet. Falls dies fehlschlägt, 
-weil z.b. der Node zum beispiel bereits ausgelinkt wurde,
-wird wieder beim Listenkopf begonnen. Um dieses Verhalten zu verbessern, wurde in \textit{Lock\_free\_impr.cpp} folgendes implementiert:\\
-Es wird immer der alte \textit{predecessor} gespeichert. Sollte CAS fehlschlagen, wird überprüft ob der alte \textit{predecessor}
-zum auslinken markiert wurde. Ist dies der Fall, werden \textit{predecessor, current} und \textit{successor} auf den jeweiligen Vorgänger
-gesetzt und an dieser Stelle weitergemacht. 
+
 
 \input{MemmoryManagment.tex}
 \input{Benchmark.tex} 

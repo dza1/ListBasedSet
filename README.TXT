@@ -15,10 +15,22 @@ create test case files (python3 required):
 	make testFiles
 
 execute benchmarktest for List Based Set:
-	./main [-n thread_amount]
+	./main [-n thread_amount] [-t tested_list]
+	
 		-thread_amount defines the number of threads to use, without this option it use the amount of available cores
-	 	-The number of threads is limited with the number of rows in the CSV files.
-		
+	 		-The number of threads is limited with the number of rows in the CSV files.
+
+		-tested_list define which list should be used for the benchmark. without this option all lists are tested
+			-0 all lists are tested
+			-1 List-based set with coarse-grained locks
+			-2 List-based set with fine-grained locks
+			-3 List-based set with optimistic synchronization
+			-4 List-based set with optimistic synchronization with memory management
+			-4 List-based set with lazy synchronization
+			-5 List-based set with lazy synchronization with memory management
+			-6 Lock-free list-based set
+			-8 Lock-free list-based set with memory management
+			-9 Lock-free list-based set with improvement and memory management
 
 
 Set the size of testcases
