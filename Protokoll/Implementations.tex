@@ -100,33 +100,57 @@ Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{
 
 \subsection{List-based set with optimistic synchronization}
 
-In dieser Implementierung wird beim Suchen eines ELementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte wird startet der Algorithmus von vorne.
+In dieser Implementierung wird beim Suchen eines Elementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte wird startet der Algorithmus von vorne. Dies hat den Vorteil, dass beim suchen eines Keys in der Liste keine Sperrungen benötigt werden. Erst wenn das Element gefunden wurde wird es gesperrt.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & ???\\
         \\
-        \textit{add} & \\
-        \textit{contains} & \\
-        \textit{remove} & \\
+        \textit{add} & Beim Hinzufügen wird die Liste durchlaufen ohne Nodes zu sperren bis die entsprechende Punkt zum Einfügen gefunden wurde. Die vorgänger und nachfolger Node werden gesperrt und mittels erneutem durchlaufen der Liste wird sichergestellt, dass diese Nodes immernoch Teil der Liste sind. Falls dies scheitert wird der Prozess von vorne gestartet. Sind jedoch die gesperrten Nodes immernoch erreichbar so wir der neue Key zwischen den gesperrten eingefügt und die Sperre wird aufgehoben.\\
+        \textit{contains} & Hier wird ebenfalls die Liste ohne Sperrungen durchsucht und nach Erfolgreichen Sperren plus der Validierung der Erreichbarkeit der Nodes wird das Ergebnis zurückgegeben.\\
+        \textit{remove} & Gleich wie bei den anderen Methoden wird der Key gesucht, gesperrt und validiert. Danach wird das Element aus der Liste entfernt und alle Sperrungen werden aufgehoben.\\
     \end{tabularx}
 \end{table}
+
+Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{sec:mem} genauer beschrieben.
 
 \subsection{List-based set with lazy synchronization}
 
-Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. 
+Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. Dies hat den Vorteil, dass für den Aufruf von der \textit{contains} Methode keine Sperrungen mehr notwendig sind.
 
 In späterer folge wird durch das Memory management, ähnlich wie bei optimistic synchronization, die Node gelöscht sobald sichergestellt werden kann, dass kein Process mehr auf die Node zugreift.
+
+\begin{figure}[H]
+	\centering
+    \begin{tikzpicture}
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (0,0) {$- \infty$};
+		\draw[->] (0.5,0) -- (1.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (2,0) {$3$};
+		\draw[->] (2.5,0) -- (3.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (4,0) {$5$};
+        \draw[->] (4.5,0) -- (7.5,0);
+        \node[draw,circle,minimum size=1cm,inner sep=0pt] (A) at (6,-2) {$8$};
+        \node[draw,circle,minimum size=0.8cm,inner sep=0pt, red] at (6,-2) {};
+        \node[draw,circle,minimum size=1cm,inner sep=0pt] (B) at (8,0) {$10$};
+        \draw[->] (A) -- (B);
+		\draw[->] (8.5,0) -- (9.5,0);
+		\node[draw,circle,minimum size=1cm,inner sep=0pt] at (10,0) {$\infty$};
+	\end{tikzpicture}
+	\caption{fine-grained locks remove}
+	\label{tik:fine-grained-remove}
+\end{figure}
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & ???\\
         \\
-        \textit{add} & \\
-        \textit{contains} & \\
+        \textit{add} & Gleich wie bei den fine-grained locks\\
+        \textit{contains} & Die liste wird durchlaufen und bei einem erfolgreichem Fund wird sichergestellt, dass dieses Element noch nicht markiert wurde. \\
         \textit{remove} & \\
     \end{tabularx}
 \end{table}
+
+Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{sec:mem} genauer beschrieben.
 
 \subsection{Lock-free list-based set}
 
