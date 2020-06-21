@@ -14,7 +14,6 @@ main
 *.toc
 **/result_old
 **/result_copy
-*.pdf
 *.old
 *.svg
 /result/average

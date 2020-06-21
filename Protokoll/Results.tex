@@ -4,6 +4,7 @@ Bei Erweiterung ``\_impr'' handelt es sich um eine Verbesserte Version vie in Ka
 Bei Datenstrukturen mit der Erweiterung ``\_mem'' ist ein Memorymanagement implementiert (siehe \ref{sec:mem}).
 Alle Benchmarks wurden auf den TU Nebula Maschine ausgeführt. Aufgrund der beschrankten Rechenzeit auf dieser Maschine,
 wurden die Test nur 10 Mal wiederholt. Die folgenden Abbildungen zeigen jeweils den Mittelwert aller Wiederholungen.
+Dabei ist Anzumerken, das die Anzahl der Threads und die Anzahl der verwendeten Cores bei allen Tests identisch ist. 
 
 \subsection{Laufzeit mit 64 Cores}
 
@@ -77,7 +78,8 @@ Somit wird dies bei noch größeren Listen relevant. Im zuge dieses Projektes wu
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Laufzeit mit unterschiedlichen Cores}
-\label{subsec:laufzeit}
+\subsubsection{Vergleich 20 000 Listeneinträgen}
+\label{subsec:laufzeit_20000}
 Die Abbildung \ref{fig:mixed_time_cores_20000} zeigt die Laufzeit mit einer Listengröße von 20000 Einträgen bei
  \textit{contain()}, 1000 \textit{add()} und 100 \textit{remove()} zugriffen.
  Auffallend ist hier, dass
@@ -128,7 +130,7 @@ Vergleicht man nun die Speedups der schnellsten Datenstruktur (\textit{lock-free
 mit 120000 Einträgen, kommt man auf folgende Werte:
 \\Seedup T16/T32=1.42
 \\Seedup T32/T64=1,7
-\\ Vergleicht man diese Werte mit den Speedups von \ref{subsec:laufzeit} und \ref{subsub:Vergleich_40000}, 
+\\ Vergleicht man diese Werte mit den Speedups von \ref{subsec:laufzeit_20000} und \ref{subsub:Vergleich_40000}, 
 ist ersichtlich, dass das vergrößern der Liste keinen signifikanten Einfluss auf den Speedup hat. 
 
 
