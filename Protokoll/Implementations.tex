@@ -2,7 +2,7 @@
 \label{sec:implementation}
 \subsection{List-based set with coarse-grained locks}
 
-Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gesperrt. Dadurch kann aber die Parallelisierung nicht wirklich ausgenutzt werden, da zu einem Zeitpunkt maximal ein Prozess auf die Liste zugreifen kann. Diese Implementierung ist daher sehr ähnlich zu einer sequentiellen Implementierung.
+Bei dieser Implementierung wir vor jedem Methodenaufruf die gesamte Liste gesperrt. Dadurch kann aber die Parallelisierung nicht wirklich ausgenutzt werden, da zu einem Zeitpunkt maximal ein Prozess auf die Liste zugreifen kann. Diese Implementierung ist daher sehr ähnlich zu einer sequentiellen Implementierung.
 
 \begin{figure}[H]
 	\centering
@@ -28,7 +28,7 @@ Bei dieser Implementierung wir vor jedem Methodenaufruf die gesammte Liste gespe
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & Die Sperrung\\
         \\
-        \textit{add} & Nachdem die Liste gegsperrt wurde wird sie durchlaufen bis zu dem Punkt an dem der Key der betrachteten Node größer ist als der Einzufügende. Dort wird die Neue Node eingefügt. \\
+        \textit{add} & Nachdem die Liste gesperrt wurde wird sie durchlaufen bis zu dem Punkt an dem der Key der betrachteten Node größer ist als der Einzufügende. Vor dieser wird die Neue Node eingefügt. \\
         \textit{contains} & Die Liste wird gesperrt und dann durchlaufen. Wenn dabei der gesuchten Wert gefunden wird, wird \textit{true} sont \textit{false} zurückgegeben.\\
         \textit{remove} & Nachdem die gesamte Liste gesperrt wurde wird das Element in der Liste gesucht und entfernt.\\
     \end{tabularx}
@@ -90,7 +90,7 @@ Thread in der Liste nicht ``Überholt'' werden kann.
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & Wenn der Key in der Liste ist dann der Punkt an dem die zu suchende Node gesperrt wurde. Sonst wenn die nächst höhere Node gesperrt wurde.\\
         \\
-        \textit{add} & Die Liste wird iteriert und an dem Punkt an dem die Node eingefügt werden soll wird sowohl der Vorgänger als auch der Nachfolger gesperrt. Dadurch kann die neue Node sicher eingefügt werden.\\
+        \textit{add} & Die Liste wird iteriert (mit Sperrungen) und an dem Punkt an dem die Node eingefügt werden soll wird sowohl der Vorgänger als auch der Nachfolger gesperrt. Dadurch kann die neue Node sicher eingefügt werden.\\
         \textit{contains} & Die Liste wird analog zur coarse-grained locks iteriert dabei aber immer die derzeitige Node bzw. beim Übergang Vorgänger und Nachfolger gesperrt. Wenn die entwprechende Node gefunden wurde wird \textit{true} sonst \textit{false} zurückgegeben. \\
         \textit{remove} & Die Liste wird wie bei contains iteriert und wenn die zu entfernende Node gefunden wurde wird der Zeiger der Vorgänger Node auf den darauffolgenden verwiesen und somit die zu entfernende Node übersprungen. Siehe in Abbildung \ref{tik:fine-grained-remove}\\
     \end{tabularx}
@@ -100,13 +100,13 @@ Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{
 
 \subsection{List-based set with optimistic synchronization}
 
-In dieser Implementierung wird beim Suchen eines Elementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte wird startet der Algorithmus von vorne. Dies hat den Vorteil, dass beim suchen eines Keys in der Liste keine Sperrungen benötigt werden. Erst wenn das Element gefunden wurde wird es gesperrt.
+In dieser Implementierung wird beim Suchen eines Elementes zuerst keine Node gesperrt sonder einfach nur eine Iteration durchgeführt. Sobald das gesuchte gefunden wurde wird dieses gesperrt und sichergestellt, dass diese Node immernoch erreichbar ist. Falls dies nicht der Fall sein sollte, wird startet der Algorithmus von vorne. Dies hat den Vorteil, dass beim Suchen eines Keys in der Liste keine Sperrungen benötigt werden. Erst wenn das Element gefunden wurde wird es gesperrt.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & ???\\
         \\
-        \textit{add} & Beim Hinzufügen wird die Liste durchlaufen ohne Nodes zu sperren bis die entsprechende Punkt zum Einfügen gefunden wurde. Die vorgänger und nachfolger Node werden gesperrt und mittels erneutem durchlaufen der Liste wird sichergestellt, dass diese Nodes immernoch Teil der Liste sind. Falls dies scheitert wird der Prozess von vorne gestartet. Sind jedoch die gesperrten Nodes immernoch erreichbar so wir der neue Key zwischen den gesperrten eingefügt und die Sperre wird aufgehoben.\\
+        \textit{add} & Beim Hinzufügen wird die Liste durchlaufen ohne Nodes zu sperren bis die entsprechende Punkt zum Einfügen gefunden wurde. Die vorgänger und nachfolger Nodes werden gesperrt und mittels erneutem durchlaufen der Liste wird sichergestellt, dass diese Nodes immernoch Teil der Liste sind. Falls dies scheitert wird der Prozess von vorne gestartet. Sind jedoch die gesperrten Nodes immernoch erreichbar so wir der neue Key zwischen den gesperrten eingefügt und die Sperre wird aufgehoben.\\
         \textit{contains} & Hier wird ebenfalls die Liste ohne Sperrungen durchsucht und nach Erfolgreichen Sperren plus der Validierung der Erreichbarkeit der Nodes wird das Ergebnis zurückgegeben.\\
         \textit{remove} & Gleich wie bei den anderen Methoden wird der Key gesucht, gesperrt und validiert. Danach wird das Element aus der Liste entfernt und alle Sperrungen werden aufgehoben.\\
     \end{tabularx}
@@ -116,7 +116,7 @@ Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{
 
 \subsection{List-based set with lazy synchronization}
 
-Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. Dies hat den Vorteil, dass für den Aufruf von der \textit{contains} Methode keine Sperrungen mehr notwendig sind.
+Lazy Synchronization verwendet eine Markierung auf den Nodes die bekannt gibt ob diese Node noch aktiv ist oder nicht. Bei einem Lösch-Vorgang wird bei der zu löschenden Node diese Markierung gesetzt. Dadurch wird diese Node bei anderen Methoden, wie zum Beispiel Contains oder Add, ignoriert. Dies hat den Vorteil, dass für den Aufruf von der \textit{contains} Methode keine Sperrungen mehr notwendig sind.
 
 In späterer folge wird durch das Memory management, ähnlich wie bei optimistic synchronization, die Node gelöscht sobald sichergestellt werden kann, dass kein Process mehr auf die Node zugreift.
 
@@ -154,7 +154,7 @@ Diese Implementierung setzt Memory Management vorraus. Dies ist in Kapitel \ref{
 
 \subsection{Lock-free list-based set}
 
-Das Ziel dieser Implementierung ist es eine Sperrungsfreie Liste zu erstellen. Dazu wird ähnlich wie bei der \textit{lazy synchronization} eine Markierung verwendet. Diese Markierung wird aber in den next-Pointer der Node integriert damit beide \textit{atomic} gelesen und geschrieben werden können. Um dies zu ermöglichen kann einfach ein Bit des Pointers gestohlen werden. Da bei einem 64-Bit Computer normalerweise nicht all Bits für die Adressierung des Speichers verwendet werden kann das höchste Bit als Markierung umfunktioniert werden.
+Das Ziel dieser Implementierung ist es eine Sperrungsfreie Liste zu erstellen. Dazu wird ähnlich wie bei der \textit{lazy synchronization} eine Markierung verwendet. Diese Markierung wird aber in den next-Pointer der Node integriert damit beide \textit{atomic} gelesen und geschrieben werden können. Um dies zu ermöglichen kann einfach ein Bit des Pointers genommen werden. Da bei einem 64-Bit Computer nicht alle Bits für die Adressierung des Speichers verwendet werden, kann das höchste Bit als Markierung umfunktioniert werden.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
@@ -162,9 +162,10 @@ Das Ziel dieser Implementierung ist es eine Sperrungsfreie Liste zu erstellen. D
         \\
         \textit{add} & Bei add wird zuerst die der Punkt zum Einfügen gesucht und dann wird eine neue Node erzeugt die auf die nachfolger Node zeigt. Danach wird mittels \textit{compare\_exchange} der Vorgänger auf die neue Node verwiesen und somit die neue Node in die Liste eingefügt. Scheitert \textit{compare\_exchange} wird der Prozess von Neuem gestartet. \\
         \textit{contains} & Gleich wie bei \textit{lazy synchronization} \\
-        \textit{remove} & Bei remove wird die zu entfernende Node zuerst gesucht und dann mittels \textit{compare\_exchange} markiert. Falls \textit{compare\_exchange} scheitert startet der Prozess wieder von vorne oder sonst wird wieder mittels \textit{compare\_exchange} versucht die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werde keine werteren Versuche zum Entfernen der Node aus der Liste vorgenommen. \todo{stimmt das?} \\
+        \textit{remove} & Bei remove wird die zu entfernende Node zuerst gesucht und dann mittels \textit{compare\_exchange} markiert. Falls \textit{compare\_exchange} scheitert startet der Prozess wieder von vorne oder sonst wird wieder mittels \textit{compare\_exchange} versucht die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werde keine werteren Versuche zum Entfernen der Node aus der Liste vorgenommen. \\
     \end{tabularx}
 \end{table}
+\todo{stimmt das?}
 
 \subsubsection{Verbesserungen}
 \label{subsec:impr}

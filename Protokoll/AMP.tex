@@ -13,6 +13,8 @@
 \usepackage{fontawesome}
 \usepackage{subfig}
 
+\usepackage[utf8]{inputenc}
+
 \renewcommand{\arraystretch}{1.5}
 
 \usetikzlibrary{arrows,automata} 
@@ -22,7 +24,7 @@
 % enter your data here
 \authors{
 	Daniel Zainzinger, Matr. Nr. 11777778 \\Noah Bruns, Matr. Nr. 11777778\par
-	{\small e11777778@student.tuwien.ac.at\\ e11777778@student.tuwien.ac.at} \par
+	{\small e11777778@student.tuwien.ac.at\\ e01630029@student.tuwien.ac.at} \par
 }
 
 
@@ -34,11 +36,10 @@
 \newpage  
 \section{Einleitung}
 Für das Programmieren mit mehreren Prozessoren ist es oft erforderlich, eine gemeinsame Datenstruktur zu verwenden. 
-Eine Möglichkeit ist List based Set. Dabei handelt es sich um eine Liste, bei welcher jedes Element einen Key besitzt.
-Dieser Key ist eindeutig und die gesamte Liste ist anhand des Schlüssel sortiert. 
+Eine Möglichkeit ist das List based Set. Dabei handelt es sich um eine Liste, bei welcher jedes Element einen Key besitzt.
+Dieser Key ist eindeutig und die gesamte Liste ist anhand dieses Keys sortiert. 
 Um das Testen und Benchmarken der Datenstrukturen einfach zu halten, werden nur positive Integer Werte in die Datenstruktur eingefügt (siehe \ref{bench:aufbau}). 
-Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene 
-Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur sichern. Eine Anleitung zum kompilieren und ausführen kann
+Es gibt mehrere Optionen für die Implementatierung einer solchen Liste. In Folgendem Kapitel werden 5 verschiedene Implementirungen vergestellt die verschidenene Techniken verwenden um die Synchronisierung und den sicheren Zugriff der gemeinsamen Datenstruktur zu gewährleisten. Eine Anleitung zum kompilieren und ausführen kann
 aus dem ``README.TXT'' entnommen werden.
 
 \begin{figure}[H]
@@ -75,9 +76,6 @@ Jede der Implementierungen enthält 3 Methoden die mit denen die Liste bearbeite
 
 
 \input{Implementations.tex}
-
-
-
 \input{MemmoryManagment.tex}
 \input{Benchmark.tex} 
 \input{Results.tex} 
