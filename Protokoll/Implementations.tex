@@ -146,7 +146,7 @@ In späterer folge wird durch das Memory management, ähnlich wie bei optimistic
         \\
         \textit{add} & Gleich wie bei den fine-grained locks\\
         \textit{contains} & Die liste wird durchlaufen und bei einem erfolgreichem Fund wird sichergestellt, dass dieses Element noch nicht markiert wurde. \\
-        \textit{remove} & Der Key wird gesucht und mitsamt seinem Vorgänger gesperrt. Danach wird Validiert ob dieses Element immernoch erreichbar ist. Wenn dies der Fall ist wird das Element markiert und einseitig aus der Liste entfernt, das bedeutet dass diese Node weiterhin auf den Nachfolger zeigt aber die vorherige Node wird ebenfalls auf den Nachfolger verwiesen. Dies ist in Abbildung \ref{tik:fine-grained-remove} verdeutlicht.\\
+        \textit{remove} & Der Key wird gesucht und mitsamt seinem Vorgänger gesperrt. Danach wird Validiert ob dieses Element immernoch erreichbar ist. Wenn dies der Fall ist wird das Element markiert und einseitig aus der Liste entfernt, das bedeutet dass diese Node weiterhin auf den Nachfolger zeigt aber die vorherige Node wird ebenfalls auf den Nachfolger verwiesen. Dies ist in Abbildung \ref{tik:fine-grained-remove} verdeutlicht. \\
     \end{tabularx}
 \end{table}
 
@@ -160,9 +160,9 @@ Das Ziel dieser Implementierung ist es eine Sperrungsfreie Liste zu erstellen. D
     \begin{tabularx}{\textwidth}{lX}
         \textbf{Linearisation Point} & ???\\
         \\
-        \textit{add} & Bei add wird zuerst die der Punkt zum Einfügen gesucht und dann wird eine neue Node erzeugt die auf die nachfolger Node zeigt. Danach wird mittels \textit{compare_exchange} der Vorgänger auf die neue Node verwiesen und somit die neue Node in die Liste eingefügt. Scheitert \textit{compare_exchange} wird der Prozess von Neuem gestartet. \\
+        \textit{add} & Bei add wird zuerst die der Punkt zum Einfügen gesucht und dann wird eine neue Node erzeugt die auf die nachfolger Node zeigt. Danach wird mittels \textit{compare\_exchange} der Vorgänger auf die neue Node verwiesen und somit die neue Node in die Liste eingefügt. Scheitert \textit{compare\_exchange} wird der Prozess von Neuem gestartet. \\
         \textit{contains} & Gleich wie bei \textit{lazy synchronization} \\
-        \textit{remove} & Bei remove wird die zu entfernende Node zuerst gesucht und dann mittels \textit{compare_exchange} markiert. Falls \textit{compare_exchange} scheitert startet der Prozess wieder von vorne oder sonst wird wieder mittels \textit{compare_exchange} versucht die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werde keine werteren Versuche zum entfernen der Node aus der Liste vorgenommen. \todo{stimmt das?} \\
+        \textit{remove} & Bei remove wird die zu entfernende Node zuerst gesucht und dann mittels \textit{compare\_exchange} markiert. Falls \textit{compare\_exchange} scheitert startet der Prozess wieder von vorne oder sonst wird wieder mittels \textit{compare\_exchange} versucht die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werde keine werteren Versuche zum Entfernen der Node aus der Liste vorgenommen. \todo{stimmt das?} \\
     \end{tabularx}
 \end{table}
 
