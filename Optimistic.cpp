@@ -57,9 +57,6 @@ template <class T> bool Optimistic<T>::add(T item,sub_benchMark_t *benchMark) {
 
 		// Add item to the set
 		nodeFine<T> *n = new nodeFine<T>(item);
-		if (w.pred->key >= n->key) {
-			printf("Error");
-		}
 		n->next = w.curr;
 		w.pred->next = n;
 

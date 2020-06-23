@@ -54,9 +54,6 @@ template <class T> bool Lazy<T>::add(T item,sub_benchMark_t *benchMark) {
 
 		// Add item to the set
 		nodeLazy<T> *n = new nodeLazy<T>(item);
-		if (w.pred->key >= n->key) {
-			printf("Error");
-		}
 		n->next = w.curr;
 		w.pred->next = n;
 

@@ -1,6 +1,6 @@
 \section{Benchmark}
-Beim Ausführen von ./main wird ein Benchmark test durchgeführt. Dieser gibt die jeweils benötigte Zeit aus und erstellt ein .csv für jede datenstruktur
-in den “result“ folder. 
+Beim Ausführen von ./main wird ein Benchmark Test durchgeführt. Dieser gibt die jeweils benötigte Zeit aus und erstellt ein .csv für jede Datenstruktur
+in den ``result'' folder. 
 
 \subsection{Aufbau}
 \label{bench:aufbau}
@@ -9,9 +9,9 @@ Datenstruktur befüllt. Sobald dies abgeschlossen ist, werden alle negativen Wer
 und alle positiven Einträge hinzugefügt. Somit sind in der Liste nur positive Werte zulässig. Die implementierten Datenstrukturen
 würden grundsätzlich aber auch mit negativen Werten und anderen Datentypen funktionieren. Um jedoch einen einfachen 
 Benchmark zu realisieren sind nur Einträge zwischen 1 und 2.147.483.646 möglich. 
-Nach jeder Entfernung ung Hinzufügung eines Wertes wirt mithilfe von \textit{contain} überprüft, ob das element hinzugefügt bzw.
+Nach jeder Entfernung und Hinzufügung eines Wertes wirt mithilfe von \textit{contain()} überprüft, ob das Element hinzugefügt bzw.
 entfernt wurde. 
-Als dritter und letzter Schritt wird mithilfe von \textit{contain} überprüft, ob sich alle positiven Werte aus dem main-File 
+Als dritter und letzter Schritt wird mithilfe von \textit{contain()} überprüft, ob sich alle positiven Werte aus dem main-File 
 in der Datenstruktur befinden und ob alle negativen Werte aus der Datenstruktur entfernt wurden. 
 \\
 pre[0-9]+.csv und main[0-9]+.csv sind so aufgebaut, dass im main-File alle Werte aus dem pre-file mit negativen Vorzeichen
@@ -21,8 +21,7 @@ zufällig permutiert.
 \subsection{Testcases erstellen}
 Die Testcases werden mithilfe eines Python Skriptes erstellt. Dabei ist die größe der Testcases mithilfe der Konstanten
 RAW\_BASE und COOLUMS\_BASE einzustellen. Mit FILE\_AMOUNT kann eingestellt werden, wie viele Testcases erstellt werden.
-Dabei werden bei jeder Interation RAW\_BASE und COOLLUM\_BASE mit der aktuellen Iteration-Variable multipliziert.
-Dies entspricht einen quadratischen Anstieg der Einträge in den Testfiles.   
+Dabei werden bei jeder Interation RAW\_BASE und COOLLUM\_BASE mit 2 hoch der aktuellen Iteration-Variable multipliziert. 
 
 
 \subsection{Interpretation Benchmark Werte}
@@ -46,18 +45,18 @@ Features kann aus Tablelle \ref{tab:csv} entnommen werden.
 	 \multicolumn{2}{|l|}{\textbf{Ausschließliches einfügen in die Datenstruktur nur \textit{add()}}}    \\ \hline
 	 time write& 	Benötigte Zeit, um die Werte aus dem ersten Schritt in die Datenstruktur einzufügen\\ \hline
 	 goToStart write& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
-	 lostTime write&  Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	 lostTime write&  Zeit die durch ein erneutes Durchsuchen verloren geht.\\ \hline
 	 \multicolumn{2}{l}{} \\ \hline
 	 \multicolumn{2}{|l|}{\textbf{Gemischter Zugriff \textit{add(), remove()} und \textit{contain()}}}    \\ \hline
 	 time mixed& 	Benötigte Zeit, um die Werte aus dem zweiten Schritt in die Datenstruktur einzufügen 
 	 				bzw. zu entfernen und jeweils anschließend zu überprüfen\\ \hline
 	 goToStart mixed& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
-	 lostTime mixed& Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	 lostTime mixed& Zeit die durch ein erneutes Durchsuchen verloren geht.\\ \hline
 	 \multicolumn{2}{l}{} \\ \hline
 	 \multicolumn{2}{|l|}{\textbf{Lesender Zugriff nur \textit{contain()}}}    \\ \hline
 	 time check& Benötigte Zeit, um zu überprüfen, ob alle Werte aus dem zweiten Schritt hinzugefügt bzw. entfernt wurden \\ \hline
 	 goToStart check& Anzahl der Vorfälle, die ein erneutes Durchsuchen der Datenstruktur vom Beginn an erfordern\\ \hline
-	 lostTime check& Zeit die durch ein erneutes Durchsuchen Verloren geht.\\ \hline
+	 lostTime check& Zeit die durch ein erneutes Durchsuchen verloren geht.\\ \hline
 	\end{tabular} 
 	\caption{CSV Spalten}
 	\label{tab:csv}

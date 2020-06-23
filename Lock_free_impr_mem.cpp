@@ -282,10 +282,8 @@ template <class T> nodeAtom<T> *LockFree_impr_mem<T>::getPointer(nodeAtom<T> *po
  * @param	[in,out]  pointer  	pointer to the node
  */
 template <class T> void LockFree_impr_mem<T>::setFlag(nodeAtom<T> **pointer) {
-	// cout <<endl <<"Pointer: "<<*pointer <<" ";
 	uint64_t u64_ptr = (uint64_t)*pointer;
 	*pointer = (nodeAtom<T> *)(u64_ptr |= MASK);
-	// cout <<*pointer <<" "<<u64_ptr << endl;
 }
 
 /**

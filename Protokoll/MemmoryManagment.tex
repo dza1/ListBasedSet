@@ -1,11 +1,11 @@
 \section{Memmory Managment}\label{sec:mem}
 Bei \textit{List-based set with optimistic synchronization}, \textit{List-based set with lazy synchronization} und \textit{Lock-free list-based set}
 gibt es ein Problem mit den Memmory Managment. Bei diesen Datenstrukturen ist das lesen eines Nodes auch ohne einen Lock möglich. 
-Dadurch kann von einen Thread nicht sichergestellt werden, dass nach dem unlinken eines Nodes dieser nicht noch von einen anderen Thread gelesen wird.
+Dadurch kann von einen Thread nicht sichergestellt werden, dass nach dem auslinken eines Nodes dieser nicht noch von einen anderen Thread gelesen wird.
 \\ 
 \textbf{Beispiel:}
 \\ Angenommen Thread A liest einen Node und legt sich schlafen. Thread B will diesen Thread löschen. Dazu linkt er den Node aus der Datenstruktur aus
-. Anschließend wird dieser von Thread A gelöscht. Wenn nun Thread A wieder aufwacht, und auf den Node zugreiffein will, ist der Speicher breits freigegeben
+. Anschließend wird dieser von Thread A gelöscht. Wenn nun Thread A wieder aufwacht, und auf den Node zugreiffein will, ist der Speicher bereits freigegeben
 und es tritt ein Segfault auf. 
 
 \subsection{Makierung beim Lesen}
@@ -13,17 +13,17 @@ Als erster Ansatz wurde versucht, mithilfe eines Counters einen Node zu makieren
 Zielführend und ist nur zum verdeutlichen der Schwierigkeit dieses Problems erwähnt. \\
 Bevor ein Thread einen Node liest, erhöht er einen Counter in diesen Node. Nachdem ein Node verlassen wurde, wird dieser Counter wieder verringert.
 Ein Thread, der diesen Node löschen will, darf dies erst tun, sobald der Node ausgelinkt und der Counter den Wert 0 hat. \\
-Damit ein Thread den nächsten Node markieren kann, muss er zuerst den “next“ Pointer aus den aktuellen Node auslesen und dann den Counter erhöhen (next->counter++).
-Es ist jedoch nicht möglich, das Auslesen des next Pointers und das erhöhen des Counters atomar auszuführen. Auch ein “compare and swap“ ist hierbei nicht hilfreich,
+Damit ein Thread den nächsten Node markieren kann, muss er zuerst den ``next'' Pointer aus den aktuellen Node auslesen und dann den Counter erhöhen (next$\rightarrow$counter++).
+Es ist jedoch nicht möglich, das Auslesen des next Pointers und das erhöhen des Counters atomar auszuführen. Auch ein ``compare and swap'' ist hierbei nicht hilfreich,
 da das vergleichen mit einen freigegebenen Speicherbereich zu einen Segmentation Fault führt. 
 
 
 \subsection{Delete Queue mit Zeitstempel}
-Um zu verbeiden, dass ein Node gelöscht wird, wärend er von einen anderen Thread noch gelesen wird, muss sichergestellt werden, dass dieser “frei“ ist. 
+Um zu verbeiden, dass ein Node gelöscht wird, wärend er von einen anderen Thread noch gelesen wird, muss sichergestellt werden, dass dieser ``free'' ist. 
 Dazu wurden Zeitstempel eingeführt. Jeder Thread besitzt einen globalen Integer, wo sein Zeitstempel gespeichert wird. Sobald eine Operation
-wie Beispielsweise “add“ abgeschlossen ist, wird dieser Zeitstempel erhöht.  Will nun ein Thread einen Node löschen, wird dieser zuerst ausgelinkt. 
+wie Beispielsweise ``add'' abgeschlossen ist, wird dieser Zeitstempel erhöht.  Will nun ein Thread einen Node löschen, wird dieser zuerst ausgelinkt. 
 Anschließend werden alle Zeitstempel ausgelesen und gemeinsam mit einen Pointer auf den zu löschenden Node in einer Queue hinzugefügt. Diese 
-Queue wird lokal im Thread gespeichert und wurde als C++ Vektor realisiert. Nach den Abschluss einer Operation wei Beispielsweise “add“, wird 
+Queue wird lokal im Thread gespeichert und wurde als C++ Vektor realisiert. Nach den Abschluss einer Operation wei Beispielsweise ``add'', wird 
 die Queue mit zu löschenden Kandidaten durchlaufen. Für jeden Node werden nun die gespeicherten Zeitstempel mit den aktuellen Zeitstempel verglichen. 
 Wenn sich alle Zeitstempel eines Nodes von den aktuellen Zeitstempel unterscheiden, ist sichergestellt, dass dieser Node von keinen Thread mehr gelesen wird. 
 Nun kann der Speicher des Nodes wieder Freigegeben werden und aus der Queue entfernt werden. 
