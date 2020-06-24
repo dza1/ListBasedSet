@@ -4,7 +4,8 @@
 
 Bei dieser Implementierung wir vor jedem Methodenaufruf die gesamte Liste gesperrt. Dadurch kann aber die Parallelisierung 
 nicht ausgenutzt werden, da zu einem Zeitpunkt maximal ein Prozess auf die Liste zugreifen kann. Diese Implementierung ist 
-daher sehr ähnlich zu einer sequentiellen Implementierung.
+daher sehr ähnlich zu einer sequentiellen Implementierung. Es gibt aber trotzdem Fälle in denen es Sinn macht eine solche Implementierung zu verwenden.
+Beispielsweise wenn nur selten darauf zugegriffen werden muss und die Datenstruktur ohne interne Synchronisierungsmechanismen effizienter ist.
 
 \begin{figure}[H]
 	\centering
@@ -28,20 +29,20 @@ daher sehr ähnlich zu einer sequentiellen Implementierung.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
-        \textit{add} & Nachdem die Liste gesperrt wurde, wird sie durchlaufen bis zu dem Punkt, an dem der Key des betrachteten Nodes größer ist als der einzufügende ist. Vor diesen wird der neue Node eingefügt. \\
-        \textit{contains} & Die Liste wird gesperrt und dann durchlaufen. Wenn dabei der gesuchten Wert gefunden wird, wird \textit{true}, ansonsten \textit{false} zurückgegeben.\\
-        \textit{remove} & Nachdem die gesamte Liste gesperrt wurde wird das Element in der Liste gesucht und entfernt.\\
+        \textit{add} & Nachdem die Liste gesperrt wurde, wird sie durchlaufen bis zu dem Punkt, an dem der Key der betrachteten Nodes größer ist als der einzufügende. Vor diesem wird die neue Node eingefügt. \\
+        \textit{contains} & Die Liste wird gesperrt und danach durchlaufen. Wenn dabei der gesuchten Wert gefunden wird, wird \textit{true}, ansonsten \textit{false} zurückgegeben.\\
+        \textit{remove} & Nachdem die gesamte Liste gesperrt wurde wird das Element in der Liste gesucht und aus der Liste ausgehängt. \\
     \end{tabularx}
 \end{table}
 
 \subsection{List-based set with fine-grained locks}
 
-Im Unterschied zu den \textit{coarse-grained locks} wird bei dieser Implementierung immer nur der derzeitige Node gesprerrt. 
-Beim Iterieren der Liste wird während dem Übergang zum nächsten Node die derzeitige und der darauffolgende Node gesperrt. 
+Um Parallelisierung zu ermöglichen wird, im Unterschied zu den \textit{coarse-grained locks}, bei dieser Implementierung immer nur der derzeitige Node gesperrt. 
+Beim Iterieren der Liste wird während dem Übergang zum nächsten Node der derzeitige und der darauffolgende Node gesperrt. 
 Ein Node kann zu einem Zeitpunkt nur von einem Prozess gesperrt sein. Der Vorteil gegenüber den coarse-grained locks besteht darin, 
 dass nun wirkliche Parallelisierung möglich ist und verschiedene Threads an unterschiedlichen Punkten an der Liste arbeiten können. 
 Es hat jedoch den Nachteil, dass die Iterationsgeschwiendigkeit durch den langsamsten Thread definiert wird, da ein 
-Thread in der Liste nicht ``Überholt'' werden kann.
+Thread beim Iterieren der Liste nicht ``Überholt'' werden kann bzw. ein schlafender Thread der eine Sperre auf einer Node am Anfang der Liste besitz kann alle anderen Threads blockieren.
 
 \begin{figure}[H]
 	\centering
@@ -88,13 +89,11 @@ Thread in der Liste nicht ``Überholt'' werden kann.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
-		\textit{add} & Die Liste wird mit locks iteriert, bis der Punkt an dem der Node eingefügt werden soll erreich ist. Beim erreichen diese Punktes ist
-		 sowohl der Vorgänger als auch der Nachfolger bereits gesperrt. Dadurch kann der neue Node sicher eingefügt werden.\\
-		\textit{contains} & Die Liste wird analog zur coarse-grained locks iteriert, dabei aber immer der derzeitige Node bzw. beim Übergang Vorgänger und Nachfolger gesperrt. 
+		\textit{add} & Die Liste wird mit Locks iteriert, bis der Punkt an dem der Node eingefügt werden soll erreicht ist. Beim erreichen dieses Punktes ist sowohl der Vorgänger als auch der Nachfolger bereits gesperrt. Dadurch kann der neue Node sicher eingefügt werden.\\
+		\textit{contains} & Die Liste wird analog zu add mit Locks iteriert. 
 		Wenn der entsprechende Node gefunden wurde, wird \textit{true} sonst \textit{false} zurückgegeben. \\
-		\textit{remove} & Die Liste wird wie bei \textit{contains} iteriert. Sobald der zu entfernende Node gefunden wurde, wird der Zeiger des vorgänger Nodes
-		auf den darauffolgenden verwiesen und somit der zu entfernende Node übersprungen. Da der löschende Thread durch den lock exklusiven Zugriff auf den Node hat,
-		kann dieser auch physikalisch vom Speicher entfernt werden. 
+		\textit{remove} & Die Liste wird wie bei \textit{add} iteriert. Sobald der zu entfernende Node gefunden wurde, wird der Zeiger des vorgänger Nodes
+		auf den darauffolgenden verwiesen und somit der zu entfernende Node übersprungen. Da der löschende Thread durch den lock exklusiven Zugriff auf den Node hat, kann dieser auch physikalisch vom Speicher entfernt werden. 
 		Siehe Abbildung \ref{tik:fine-grained-remove}\\
     \end{tabularx}
 \end{table}
@@ -102,11 +101,10 @@ Thread in der Liste nicht ``Überholt'' werden kann.
 
 \subsection{List-based set with optimistic synchronization}
 
-In dieser Implementierung wird beim Suchen eines Elementes zuerst kein Node gesperrt, sondern einfach nur eine Iteration durchgeführt. 
+Um das blockieren der Liste durch einen langsamen Thread zu beheben wird in dieser Implementierung wird beim Suchen eines Elementes zuerst kein Node gesperrt, sondern einfach nur eine Iteration durchgeführt. 
 Sobald der gesuchte gefunden wurde, wird dieser gesperrt. Anschließend muss sichergestellt werden, dass dieser Node noch immer erreichbar ist 
-und nicht von einem anderen Thread bereits gelöscht wurde. Dies erfordert jedoch eine zweite Iteration der Liste. Ist der Node nicht mehr erreichbar, 
-wird der Algorithmus von vorne gestartet. Dies hat den Vorteil, dass beim Suchen eines Keys in der Liste keine Sperrungen benötigt werden. 
-Erst wenn das Element gefunden wurde, wird es gesperrt. Jedoch sind dadurch zwei Iterationen notwendig.
+und nicht von einem anderen Thread bereits gelöscht wurde. Dies erfordert jedoch eine zweite Iteration der Liste die durchaus aufwendig ist. Ist der Node nicht mehr erreichbar, wird der Algorithmus von vorne gestartet. Dies hat den Vorteil, dass beim Suchen eines Keys in der Liste keine Sperrungen benötigt werden. 
+Erst wenn das Element gefunden wurde, wird es gesperrt. Jedoch sind dadurch zwei Iterationen notwendig. Und wenn die Validierung der Erreichbarkeit der gesperrten Nodes scheitert kann es zu noch mehr Iterationen führen.
 
 \begin{table}[H]
     \begin{tabularx}{\textwidth}{lX}
@@ -118,20 +116,21 @@ Erst wenn das Element gefunden wurde, wird es gesperrt. Jedoch sind dadurch zwei
 		der Nodes wird das Ergebnis zurückgegeben.\\
 		\textit{remove} & Gleich wie bei den anderen Methoden wird der Key gesucht, gesperrt und validiert. Danach wird das Element aus der Liste entfernt und 
 		alle Sperrungen werden aufgehoben. Da für das Iterieren keine Sperrungen erforderlich sind, kann nicht sichergestellt werden, dass der ausgelinkte
-		Node nicht von einem anderen Thread gerade gelesen wird. Dadurch kann der Node nicht vom Speicher gelöscht werden.\\
+		Node nicht von einem anderen Thread gerade gelesen wird. Dadurch kann der Node nicht vom Speicher gelöscht werden. Deswegen erfordert dieses Implementierung Memory Management wie in \ref{sec:mem} beschrieben. \\
     \end{tabularx}
 \end{table}
 
-Bei dieser Implementierung wurde auf Memory Managemen verzichtet, dadurch wird Speicher geleakt.
-Eine Lösung dieses Problems wird in Kapitel \ref{sec:mem} gezeigt.
+Dieses Implementierung wurde einmal mit und einmal ohne Memory Management ausgeführt. Die Klasse ohne Memory Management heißt \textit{Optimistic} und jene mit \textit{Optimistic_mem}.
 
 \subsection{List-based set with lazy synchronization}
 
-Lazy Synchronization verwendet eine Markierung auf den Nodes welche bekannt gibt, ob dieser Node bereits logisch gelöscht wurde. 
+Bei der optimistic synchronization wird immernoch eine Sperrung beim contains aufruf verwendet. 
+Um dies zu umgehen verwendet Lazy Synchronization eine Markierung auf den Nodes welche bekannt gibt, ob dieser Node bereits logisch gelöscht wurde. 
 Bei einem Lösch-Vorgang wird der zu löschenden Node diese Markierung gesetzt. Dadurch wird dieser Node bei anderen Methoden, 
 wie zum Beispiel \textit{contain()} oder \textit{add()}, ignoriert. Dies hat den Vorteil, 
-dass für den Aufruf von der \textit{contains()} Methode keine Sperrungen und keine Validierung erforderlich ist.
-Dies bringt eine Performancesteigerung, da in der Regel mit \textit{contain()} die meisten Zugriffe auf die Datenstruktur erfolgen. 
+dass für den Aufruf von der \textit{contains()} Methode keine Sperrungen und keine Validierung mehr erforderlich ist.
+Dies bringt eine Performancesteigerung, da in der Regel mit \textit{contain()} die meisten Zugriffe auf die Datenstruktur erfolgen.
+Wenn jedoch die Validierung scheitert erfordert das einen aufwendigen Neustart der Methode. 
 
 
 \begin{figure}[H]
@@ -166,10 +165,7 @@ Dies bringt eine Performancesteigerung, da in der Regel mit \textit{contain()} d
     \end{tabularx}
 \end{table}
 
-Bei dieser Implementierung wurde auf Memory Managemen verzichtet, dadurch wird Speicher geleakt.
-Eine Lösung dieses Problems wird in Kapitel \ref{sec:mem} gezeigt.
-
-
+Dieses Implementierung wurde einmal mit und einmal ohne Memory Management ausgeführt. Die Klasse ohne Memory Management heißt \textit{Lazy} und jene mit \textit{Lazy_mem}.
 
 \subsection{Lock-free list-based set}
 
@@ -186,7 +182,7 @@ des Speichers verwendet werden, kann das höchste Bit als Markierung umfunktioni
         \textit{contains} & Gleich wie bei \textit{lazy synchronization} \\
 		\textit{remove} & Bei remove wird der zu entfernende Node zuerst gesucht und dann im next-Pointer markiert. 
 		Danach wird wieder mittels \textit{compare\_exchange} versucht 
-		die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werde 
+		die Node noch aus der Liste zu entfernen indem in der Vorgänger Node der next-Pointer auf den Nachfolger gelegt wird. Falls dies jedoch scheitert werden 
 		keine werteren Versuche zum Entfernen des Nodes aus der Liste vorgenommen. Die \textit{find()} Funktion, welche von \textit{add()}, \textit{contain()} und 
 		\textit{remove()} verwendet wird, erkennt beim Iterieren markierte Nodes und versucht erneut diese zu entfernen. \\
     \end{tabularx}
