@@ -1,8 +1,8 @@
 import random
 
-FILE_AMOUNT = 1
+FILE_AMOUNT = 3
 RAW_BASE = 100 #amount of lines for the first file
-COOLUMS_BASE = int(200) #amount of coolums for the first line  %96 %170 %212
+COOLUMS_BASE = 200 #amount of coolums for the first line  %96 %170 %212
 
 
 def create_testfiles():
