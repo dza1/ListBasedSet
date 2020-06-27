@@ -1,8 +1,8 @@
 \section{Resultate}
 Bei den Resultaten handelt es sich um die Datenstrukturen, welche in Kapitel \ref{sec:implementation} beschreiben sind.
-Bei Erweiterung ``\_impr'' handelt es sich um eine Verbesserte Version vie in Kapitel \ref{sec:mem} beschrieben.
+Bei Erweiterung ``\_impr'' handelt es sich um eine Verbesserte Version wie in Kapitel \ref{subsec:impr} beschrieben.
 Bei Datenstrukturen mit der Erweiterung ``\_mem'' ist ein Memorymanagement implementiert (siehe \ref{sec:mem}).
-Alle Benchmarks wurden auf den TU Nebula Maschine ausgeführt. Aufgrund der beschrankten Rechenzeit auf dieser Maschine,
+Alle Benchmarks wurden auf den TU Nebula Maschine ausgeführt. Aufgrund der beschränkten Rechenzeit auf dieser Maschine,
 wurden die Test nur 10 Mal wiederholt. Die folgenden Abbildungen zeigen jeweils den Mittelwert aller Wiederholungen.
 Dabei ist Anzumerken, das die Anzahl der Threads und die Anzahl der verwendeten Cores bei allen Tests identisch ist. 
 
@@ -29,7 +29,7 @@ Zugriff auf die Liste hat. Die schnellste Datenstruktur ist die \textit{lock-fre
 \end{figure}
 Die Abbildung \ref{fig:write_time} zeigt die benötigte Laufzeit bei gemischten Zugriff. Dabei sind die Zugriffe folgendermaßen aufgeteilt:
  $50\%$ \textit{contain()}, $25\%$ \textit{add()} und $25\%$ \textit{remove()}.
- Dabei ist auf der X-Achse die größe der Liste zu sehen, was auch jeweils der Anzahl der hinzugefügten und entfernten Daten entspricht. 
+ Dabei ist auf der X-Achse die Größe der Liste zu sehen, was auch jeweils der Anzahl der hinzugefügten und entfernten Daten entspricht. 
  Auffallend ist hier, dass Datenstrukturen mit einem implementierten Memorymanagement bei großen Listen schneller sind, obwohl
  das Memorymanagement zusätzlichen aufwand bedeutet. Eine mögliche Begründung liegt darin, dass dem Betriebssystem immer wieder 
  Speicher zurückgegeben wird und somit das auslagern von Daten aus dem Cache minimiert wird.
@@ -54,11 +54,11 @@ und konnte nicht bestätigt werden.
 \subsection{Neustarts von Zugriffen}
 Wie bereits in Kapitel \ref{subsec:impr} beschrieben, kann es vorkommen, dass Datenstrukturen aufgrund eines konfliktes mit einem anderen
 Thread einen laufenden Task neu beginnen müssen. 
-In Abbildung \ref{fig:mixed_lostTime} ist zu sehen, wie oft eine laufende Funktion abgebrochen werden musste und wieder beim Listenkopf beginnen musste. 
-In Abbildung \ref{fig:mixed_goToStart} ist ersichtlich, wie viel Zeit für diese Neustarts aufgewendet werden musste. \\
+In Abbildung \ref{fig:mixed_goToStart} ist zu sehen, wie oft eine laufende Funktion abgebrochen werden musste und wieder beim Listenkopf beginnen musste. 
+In Abbildung \ref{fig:mixed_lostTime} ist ersichtlich, wie viel Zeit für diese Neustarts aufgewendet werden musste. \\
 Bei einer Listengröße von 256 000 mit 64 Cores und 512 000 Zugriffen startet die Lock-free Liste 3163 mal neu. Dies bedeutet
 einen zusätzlichen Zeitaufwand von 21 Sekunden. Somit spendet jeder Core 0,33 Sekunden mit Neustarts. Bei einer Laufzeit von 123204 Sekunden 
-entspricht das 0,00028\% der Laufzeit. Da wie in Abbildung \ref{fig:mixed_lostTime} ersichtlich, steigt die zusätzliche Zeit durch Neustart exponentiell.
+entspricht das 0,00028\% der Laufzeit. Da wie in Abbildung \ref{fig:mixed_lostTime} ersichtlich, steigt die zusätzliche Zeit durch Neustart erheblich.
 Somit wird dies bei noch größeren Listen relevant. Im zuge dieses Projektes wurden jedoch keine größeren Listen getestet. 
 
 \begin{figure}[ht!]
@@ -85,7 +85,6 @@ Die Abbildung \ref{fig:mixed_time_cores_20000} zeigt die Laufzeit mit einer List
  Auffallend ist hier, dass
  das \textit{fine-grained locks} mit zwei Cores fast drei mal so lange benötigt als mit einem Core, da sich die einzelnen
  Threads gegenseitig behindern. 
- \todo[]{Warum??}
  Weiters ist auch ersichtlich, dass bei der \textit{coarse-grained locks} Liste die Laufzeit erhöht wird, je höher
  die Anzahl der verwendeten Cores.\\
  Vergleicht man die jeweils schnellsten Datenstrukturen, kommt man auf folgende Ergebnisse:
@@ -125,7 +124,7 @@ mit 40 000 Einträgen, kommt man auf folgende Werte:
 
 \subsubsection{Vergleich 120 000 Listeneinträgen}
 Die Abbildung \ref{fig:mixed_time_cores_120000} zeigt die Laufzeit bei
-120 000 Listeneinträgen mit 240 000 zugriffen mit der gleichen Aufteilung wie die beiden vorangegengenen Abbildungen.
+120 000 Listeneinträgen mit 240 000 zugriffen mit der gleichen Aufteilung wie die beiden vorangegangenen Abbildungen.
 Vergleicht man nun die Speedups der schnellsten Datenstruktur (\textit{lock-free improved with memorymanagement} Liste)
 mit 120000 Einträgen, kommt man auf folgende Werte:
 \\Seedup T16/T32=1.42
@@ -135,7 +134,7 @@ ist ersichtlich, dass das vergrößern der Liste keinen signifikanten Einfluss a
 
 
 
-\begin{figure}[ht!]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=1.0\linewidth]{./plots_pdf/mixed_time_cores_120000.pdf} 
 	\caption{Laufzeit mit 120 000 Listeneinträgen}

@@ -9,7 +9,7 @@ Datenstruktur befüllt. Sobald dies abgeschlossen ist, werden alle negativen Wer
 und alle positiven Einträge hinzugefügt. Somit sind in der Liste nur positive Werte zulässig. Die implementierten Datenstrukturen
 würden grundsätzlich aber auch mit negativen Werten und anderen Datentypen funktionieren. Um jedoch einen einfachen 
 Benchmark zu realisieren sind nur Einträge zwischen 1 und 2.147.483.646 möglich. 
-Nach jeder Entfernung und Hinzufügung eines Wertes wirt mithilfe von \textit{contain()} überprüft, ob das Element hinzugefügt bzw.
+Nach jeder Entfernung und Hinzufügung eines Wertes wird mithilfe von \textit{contain()} überprüft, ob das Element hinzugefügt bzw.
 entfernt wurde. 
 Als dritter und letzter Schritt wird mithilfe von \textit{contain()} überprüft, ob sich alle positiven Werte aus dem main-File 
 in der Datenstruktur befinden und ob alle negativen Werte aus der Datenstruktur entfernt wurden. 
@@ -19,7 +19,7 @@ vorhanden sind und die positiven Werte nicht im pre-File vorkommen. Desweiteren 
 zufällig permutiert. 
 
 \subsection{Testcases erstellen}
-Die Testcases werden mithilfe eines Python Skriptes erstellt. Dabei ist die größe der Testcases mithilfe der Konstanten
+Die Testcases werden mithilfe eines Python Skriptes erstellt. Dabei ist die Größe der Testcases mithilfe der Konstanten
 RAW\_BASE und COOLUMS\_BASE einzustellen. Mit FILE\_AMOUNT kann eingestellt werden, wie viele Testcases erstellt werden.
 Dabei werden bei jeder Interation RAW\_BASE und COOLLUM\_BASE mit 2 hoch der aktuellen Iteration-Variable multipliziert. 
 
@@ -27,7 +27,7 @@ Dabei werden bei jeder Interation RAW\_BASE und COOLLUM\_BASE mit 2 hoch der akt
 \subsection{Interpretation Benchmark Werte}
 Die Dauer jedes einzelnen Tests und ob der Test erfolgreich war wird in der Kommandozeile ausgegeben. Desweiteren wird
 im Ordner \textit{results} für jede Datenstruktur ein CSV File angelegt. Die Beschreibung der einzelnen 
-Features kann aus Tablelle \ref{tab:csv} entnommen werden.
+Features kann aus Tabelle \ref{tab:csv} entnommen werden.
 \begin{table}[H]
 	%\begingroup
 

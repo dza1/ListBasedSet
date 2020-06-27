@@ -1,11 +1,11 @@
 \section{Fazit}
-Es wurden Unterschiedliche List-baset Sets implementiert und die Performance evaluiert.
+Es wurden unterschiedliche List-baset Sets implementiert und die Performance evaluiert.
 Hierbei wurde zwei Kategorien untersucht. Zum einen die Performance bei steigender Listengröße und
 die Laufzeit mit unterschiedlicher Anzahl von Cores. 
 Es war ersichtlich, dass bei der Verendung von nur einen Core die Liste mit 
 einem globalen Lock am schnellsten ist. Schon ab der Verwendung von 2 Threads sind
 andere Listen besser. Es hat sich auch gezeigt, dass das Memmory Managment, also das zurückgeben
-von nicht mehr verwendeten Speicher, positive auswirkungen auf die Performance hat. Ein weiteres
+von nicht mehr verwendeten Speicher, positive Auswirkungen auf die Performance hat. Ein weiteres
 interessantes Resultat war, dass sich die Laufzeit bei der Liste mit \textit{fine-grained locks} mit zwei Threads 
 im Vergleich zu einem Thread fast verdreifacht. Es wurde auch gezeigt, dass Listen bei einer Kollision
 mit anderen Threads abbrechen müssen und dadurch wieder beim Listenkopf beginnen müssen. 
@@ -14,5 +14,6 @@ gibt es jedoch noch weiteres Verbesserungspotential. \\
 Ein weiteres nicht erwartetes Ergebnis war, dass die \textit{lazy} Liste für eine \textit{contain()} Abfrage
 erheblich länger benötigt als die \textit{lock-free} benötigt, obwohl die Funktionen fast identisch sind. 
 In diesen Projekt sind alle Zugriffe in zufälliger Reihenfolge erfolgt. Eine weitere Möglichkeit, die Performance
-zu evaluieren wäre, nicht gleichverteilte Zugriffe zu verwenden, sondern die Zugriffe aus wenige Bereiche der Liste zu fokussieren. Dies sollte durchaus einen Einfluss auf die Performance haben.
+zu evaluieren wäre, nicht gleich verteilte Zugriffe zu verwenden, sondern die Zugriffe auf wenige Bereiche der Liste zu fokussieren. 
+Dies sollte durchaus einen Einfluss auf die Performance haben.
 Dies wurde hier jedoch nicht behandelt und wäre eine Möglichkeit für ein zukünftiges Projekt.
